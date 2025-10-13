@@ -59,7 +59,7 @@ Pass data from route to view
     Recive Data :-
 
         in target .php file 
-            {{ $variable_name }}                               // to access variable 
+            {{ $variable_name }}                                          // to access variable 
             {{ request()->parameter_Name }}                               // to access url variable 
 
 
@@ -73,13 +73,13 @@ Looping in blade file
 
     Ex:-
         @for($i=0;$i<10;$i++)
-            <p> {{$i}} </p>                     // It doesn't require {} brackets
+            <p> {{$i}} </p>                     // It doesn't require {} brackets in loop
         @endfor
 
 Blade Templates:-
 
     Condition in blade file
-        the Condition statements start with @  and ends with @endfor
+        the Condition statements start with @if and ends with @endif
 
         Ex:-
             @if($i<0)
@@ -294,6 +294,8 @@ Controllers
 
     Modify migration
         php artisan make:migration updateMigrationName --table=table_name
+        
+        Ex:-php artisan make:migration addUserIDToStudents --table=students
 
 
         public function up(): void
@@ -314,3 +316,104 @@ Controllers
                 // columns to be delete
             });
         }
+
+
+        To rollback last migration :- php artisan migrate:rollback
+        To rollback till n migration :- php artisan migrate:rollback --step=2
+
+        php artisan migrate:reset // it will reset the database deletes every tables and it's data 
+        php artisan migrate:fresh // it will delete all our migrates and remigrates again 
+
+
+Working with Models
+    create Model :- php artisan make:model model_name           //it will create model_name.php file under Http/Models Folder
+
+    CREATE model with controller :- php artisan make:model model_name -mc         // m For migration and c for controller
+
+CRUD operations with model and controller
+
+    //select
+    public function index()
+    {
+        return teacher::all();
+    }
+
+    //insert
+    public function add()
+    {
+        $item = new teacher();
+        $item->name = 'test';
+        $item->save();
+        return teacher::all();
+    }
+
+    //select 1
+    public function getTeacher($id)
+    {
+        $item = teacher::findOrFail($id);
+
+        return $item;
+    }
+
+    //update
+    public function updateTeacher($id)
+    {
+        $item = teacher::findOrFail($id);
+        $item->name = 'abcd';
+        $item->update();
+        return "updated";
+    }
+    
+
+    //delete
+    public function deleteTeacher($id)
+    {
+        $item = teacher::findOrFail($id);
+        $item->delete();
+        return "deleted";
+    }
+
+
+Routes for CRUD
+
+Route::get('teachers', [TeacherController::class, 'index']);
+Route::get('addTeacher', [TeacherController::class, 'add']);
+Route::get('getTeacher/{id}', [TeacherController::class, 'getTeacher']);
+Route::get('updateTeacher/{id}', [TeacherController::class, 'updateTeacher']);
+Route::get('deleteTeacher/{id}', [TeacherController::class, 'deleteTeacher']);
+
+
+
+Factory
+    used for testing / temparary data
+
+    command :- php artisan make:factory factoryName --model=model_name
+
+    Ex :- php artisan make:factory StudentFactory --model=student
+
+
+Problem: user_id field error
+
+    Error: Field 'user_id' doesn't have a default value during seeding.
+
+    Cause: user_id column is required but not provided in factory or seeder.
+
+    Fix
+
+        Add user_id to StudentFactory.php like this:
+
+        'user_id' => User::factory(),
+
+
+    This makes sure each student is linked to a user.
+
+    Optional: Make user_id nullable
+
+        Change migration to:
+
+        $table->foreignId('user_id')->nullable()->constrained('users');
+
+
+    Run migrations again with:
+
+    php artisan migrate:fresh --seed

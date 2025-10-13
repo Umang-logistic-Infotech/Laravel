@@ -4,7 +4,7 @@ use App\Http\Controllers\StudentController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\InvokableController;
 use App\Http\Controllers\ResourceController;
-
+use App\Http\Controllers\TeacherController;
 
 Route::get('/', function () {
     return view('home');
@@ -34,10 +34,6 @@ Route::get('student/{id}', function ($id) {
     echo "Student " . $id;
 });
 
-Route::controller(StudentController::class)->group(function () {
-    Route::get('studentController', 'index');
-    Route::get('aboutstudent/{id}/{name}', 'aboutStudent');
-});
 
 Route::get('/invoke', InvokableController::class);
 
@@ -46,6 +42,22 @@ Route::resource('/resource', ResourceController::class);
 Route::view('/aboutUs', 'aboutUs');
 Route::view('/contactUs', 'contactUs');
 
+Route::controller(StudentController::class)->group(function () {
+    Route::get('aboutstudent/{id}/{name}', 'aboutStudent');
+    Route::get('students',  'index');
+    Route::get('addStudent', 'add');
+    Route::get('getStudent/{id}', 'getStudent');
+    Route::get('updateStudent/{id}', 'updateStudent');
+    Route::get('deleteStudent/{id}', 'deleteStudent');
+});
+
+Route::controller(TeacherController::class)->group(function () {
+    Route::get('teachers',  'index');
+    Route::get('addTeacher', 'add');
+    Route::get('getTeacher/{id}', 'getTeacher');
+    Route::get('updateTeacher/{id}', 'updateTeacher');
+    Route::get('deleteTeacher/{id}', 'deleteTeacher');
+});
 
 Route::fallback(function () {
     return "please enter valid url";

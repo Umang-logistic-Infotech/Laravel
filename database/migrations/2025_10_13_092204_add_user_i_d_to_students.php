@@ -12,9 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('students', function (Blueprint $table) {
-            // insert new columns
-            $table->date('date_of_birth')->nullable();
-            $table->enum('gender', ['male', 'female'])->default('male');
+            //
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade')->onUpdate('cascade');
         });
     }
 
@@ -24,9 +23,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('students', function (Blueprint $table) {
-            // columns to be delete
-            $table->dropColumn('date_of_birth');
-            $table->dropColumn('gender');
+            //
+            $table->dropForeign(['user_id']);
+            $table->dropColumn('user_id');
         });
     }
 };
