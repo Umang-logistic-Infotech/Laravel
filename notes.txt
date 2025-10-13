@@ -3,7 +3,7 @@
 Routes in laravel
 
     simple Routing
-        The / will automatically identify the files inside recources/views Folder.
+        The / will automatically identify the files inside resources/views Folder.
 
         Ex:-
             Route::any('/program_1/post', function () {
@@ -189,3 +189,128 @@ Controllers
             Route::get('studentController', 'index');
             Route::get('aboutstudent', 'aboutStudent');
         });
+
+    pass data to the controller
+        Route::controller(StudentController::class)->group(function () {
+            Route::get('studentController', 'index');
+            Route::get('aboutstudent/{id}/{name}', 'aboutStudent');
+        });
+
+
+    Private Controllers
+        Private controller can only access within the same class.
+
+        private function  studentResult($id)
+        {
+            return "Student Id " . $id . " has 50 marks";
+        }
+
+
+    __construct() :-
+        it automatically calles when object is created.
+        whenever we need any calculation ,run any logic, or anything computation.
+
+        Ex:-
+            protected $status;                              // Global variable
+            public function __construct()
+            {
+                $this->status = "fail";
+            }
+
+    Types of controllers
+        1) Invokable controller 
+        2) Resource controller
+
+        1) Invokable controller
+            it is also called single maod controller which means if any controller have only 1 function and we don't want to use like index,create,update,delete etc.
+            it has only 1 method where we can put our logic which is __invoke function
+
+            create command :-   php artisan make:controller controller_name --invokable
+
+            Example file :-
+                class invokableController extends Controller
+                {
+                    public function __invoke(Request $request)
+                    {
+                        return "Inside invokable controller";
+                    }
+                }
+            
+            route for invokableController
+                Route::get('/invoke', InvokableController::class); // don't need to specify method automatically gets __invoke
+
+        2) Resource Controller :-
+            it has already predefined methods index, create, store, show, edit, update and destroy.
+
+            create command :- php artisan make:controller controller_name --resource
+
+            Route::resource('/resource', ResourceController::class);        // To call resource controller
+
+    Migration in Laravel
+        Migrations are version control for out database similar like gate which is version control for our code 
+
+        we track our changes over time and that database table it allows us to define table structures and update them over time using php code instade of writing row SQL query and creating tables or changing them Mannylally.
+
+        the migrations are showm inside database/migrations Folder
+        command :- 
+            php artisan migrate // for check all required tables are awailable or not
+            php artisan make:migration StudentTable         // creates migration file
+
+        The migration file has by default 2 methods up() and down()
+
+        up() - it is used for creating table structures
+        down() - to reverse migration
+
+        to create migration table with command
+             php artisan make:migration create_tablename_table
+        
+        it has by default this methods 
+            public function up(): void
+            {
+                Schema::create('students', function (Blueprint $table) {
+                    $table->id();                       // columns
+                    $table->timestamps();
+                });
+            }
+
+            /**
+            * Reverse the migrations.
+            */
+            public function down(): void
+            {
+                Schema::dropIfExists('students');
+            }
+
+        Example create student table 
+            Schema::create('students', function (Blueprint $table) {
+                $table->id();
+                $table->string('studentName');
+                $table->integer('age');
+                $table->float('percentage');
+                $table->timestamps();
+            });
+
+            it automatically adds 2 columns created_at and updated_at
+
+    Modify migration
+        php artisan make:migration updateMigrationName --table=table_name
+
+
+        public function up(): void
+        {
+            Schema::table('students', function (Blueprint $table) {
+                // insert new columns
+                $table->date('date_of_birth')->nullable();
+                $table->enum('gender', ['male', 'female'])->default('male');
+            });
+        }
+
+        /**
+        * Reverse the migrations.
+        */
+        public function down(): void
+        {
+            Schema::table('students', function (Blueprint $table) {
+                // columns to be delete
+            });
+        }

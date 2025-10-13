@@ -2,6 +2,9 @@
 
 use App\Http\Controllers\StudentController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\InvokableController;
+use App\Http\Controllers\ResourceController;
+
 
 Route::get('/', function () {
     return view('home');
@@ -33,9 +36,12 @@ Route::get('student/{id}', function ($id) {
 
 Route::controller(StudentController::class)->group(function () {
     Route::get('studentController', 'index');
-    Route::get('aboutstudent', 'aboutStudent');
+    Route::get('aboutstudent/{id}/{name}', 'aboutStudent');
 });
 
+Route::get('/invoke', InvokableController::class);
+
+Route::resource('/resource', ResourceController::class);
 
 Route::view('/aboutUs', 'aboutUs');
 Route::view('/contactUs', 'contactUs');
