@@ -1,0 +1,191 @@
+
+
+Routes in laravel
+
+    simple Routing
+        The / will automatically identify the files inside recources/views Folder.
+
+        Ex:-
+            Route::any('/program_1/post', function () {
+                return view('welcome');
+            });
+    
+        OR create direct view route 
+                Route::view('/path', 'viewFileName');
+
+
+    Dynamic Routing
+
+        Ex :- 
+            Route::get('student/{id}', function ($id) { 
+                echo "Student " . $id;
+            });
+
+    FallBack Route(Invalid Route)
+        calles when the route is not found.
+
+        Ex:- 
+            Route::fallback(function () {
+                return "please enter valid url";
+            });
+            
+            
+Pass data from route to view 
+
+    send data :-
+
+        using compact, 
+            Route::get('/', function () {
+                $data = "Data from web.php file";               
+                return view('test', compact('data'));               // compact only allows variables
+            });
+
+        OR 
+
+        using with function,
+            Route::get('/', function () {
+                $data = "Data from web.php file";               
+                return view('test')->with('data',$data);               
+            });
+
+        OR 
+
+        using key value array data,
+            Route::get('/', function () {   
+                return view('test',['key'=>value,'key'=>value]);               
+            });
+
+
+    Recive Data :-
+
+        in target .php file 
+            {{ $variable_name }}                               // to access variable 
+            {{ request()->parameter_Name }}                               // to access url variable 
+
+
+Create view file terminal
+    Command :- php artisan make:view contactUs                      // It will automatically creates contactUs.blade.php file under views Folder
+
+
+
+Looping in blade file
+    the loop starts with @for and ends with @endfor
+
+    Ex:-
+        @for($i=0;$i<10;$i++)
+            <p> {{$i}} </p>                     // It doesn't require {} brackets
+        @endfor
+
+Blade Templates:-
+
+    Condition in blade file
+        the Condition statements start with @  and ends with @endfor
+
+        Ex:-
+            @if($i<0)
+                <p> {{$i}} is Less then 0</p>
+            @else
+                <p> {{$i}} is Greater then 0</p>
+            @endif
+
+    For More Templates https://laravel.com/docs/12.x/blade
+
+Adding sub components/views
+
+    @include('fileName')
+
+    Ex:-
+        @include('subViews.input')
+        
+    call subview with data passing
+            @include('subViews.input',[
+                'lableFor' => 'Name',
+                'myName' => 'Umang'
+            ])                              // assess those data from subview with {{ $variable_name}}
+
+
+
+Terminal commands
+    To get the all routes in terminal
+        Command :- php artisan route:list
+
+            it will return all the routes list with 2 other routes
+            up : - to see our application is up,running or not.
+            storage{path} :- later discuss.
+
+    To store site in cache
+        Command :- php artisan view:cache
+
+            it will catch the site in catch memory for faster loading.
+
+    To remove cache
+        Command :- php artisan view:clear
+
+Master Layout with @extends and @yield
+
+    @extends:
+        This directive tells Laravel to extend a layout.
+
+        Example:
+
+        @extends('layouts.app')
+
+
+    @yield:
+        Used in the layout to define a placeholder for content.
+
+        Example:
+
+        <title>@yield('title', 'My Laravel App')</title>
+
+
+    @section:
+        Defines content for a specific section that will be injected into the layout's @yield.
+
+        Example:
+
+        @section('title', 'Home Page')
+
+        @section('content')
+            <p>Welcome to the home page!</p>
+        @endsection
+
+    @show:
+        Immediately displays the content of a section after it's been defined.
+
+        Example:
+
+        @section('header')
+            <h2>Header Content</h2>
+        @show
+
+
+Controllers
+    controllers are the main part of MVC.
+    It can get data from view, process data and set back data to view.
+    It has ability to get data from database/Model also.
+
+    Create a controller 
+        Mannylally inside App/Http/Controllers
+
+        OR 
+        
+        using command : php artisan make:controller controller_name
+
+    Ex :-
+        class StudentController extends Controller
+        {
+            public function  index()
+            {
+                return "From Student Controller";
+            }
+        }
+
+    route FOR controller
+        Route::get('controller', [StudentController::class, 'index']);
+
+    controller Route Group
+        Route::controller(StudentController::class)->group(function () {
+            Route::get('studentController', 'index');
+            Route::get('aboutstudent', 'aboutStudent');
+        });

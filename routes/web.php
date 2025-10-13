@@ -1,0 +1,46 @@
+<?php
+
+use App\Http\Controllers\StudentController;
+use Illuminate\Support\Facades\Route;
+
+Route::get('/', function () {
+    return view('home');
+});
+
+
+Route::get('/program_1', function () {
+    echo "Inside Program 1";
+});
+
+Route::post('/program_1/post', function () {
+    return view('welcome');
+});
+
+
+Route::prefix('detail')->group(function () {
+    Route::get('/teacher', function () {
+        echo "Teacher page";
+    })->name('teacher-details');
+
+    Route::get('student', function () {
+        echo "Student page";
+    })->name('student-details');
+});
+
+Route::get('student/{id}', function ($id) {
+    echo "Student " . $id;
+});
+
+Route::controller(StudentController::class)->group(function () {
+    Route::get('studentController', 'index');
+    Route::get('aboutstudent', 'aboutStudent');
+});
+
+
+Route::view('/aboutUs', 'aboutUs');
+Route::view('/contactUs', 'contactUs');
+
+
+Route::fallback(function () {
+    return "please enter valid url";
+});
