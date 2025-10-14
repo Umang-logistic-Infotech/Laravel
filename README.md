@@ -1,4 +1,4 @@
-# Laravel Routes and Controllers Guide
+# Laravel Easy(Quick) Learning Guide
 
 ## Table of Contents
 
