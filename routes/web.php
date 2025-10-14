@@ -7,7 +7,8 @@ use App\Http\Controllers\ResourceController;
 use App\Http\Controllers\TeacherController;
 
 Route::get('/', function () {
-    return view('home');
+    $students = (new StudentController)->index();;
+    return view('home', compact('students'));
 });
 
 

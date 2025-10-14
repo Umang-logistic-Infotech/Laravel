@@ -14,7 +14,6 @@ class StudentController extends Controller
         $this->status = "fail";
     }
 
-
     public function index()
     {
         return Student::all();
@@ -23,7 +22,9 @@ class StudentController extends Controller
     public function getStudents()
     {
         // Eloquent ORM
-        return Student::all();
+        $students = Student::all();
+        return view('home', compact('students'));
+        // return $students;
 
         // return DB::table('students')->limit(5)->get();
     }
