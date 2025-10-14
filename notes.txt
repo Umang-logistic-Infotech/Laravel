@@ -396,7 +396,7 @@ Factory
     command :- php artisan make:factory factoryName --model=model_name
 
     Ex :- php artisan make:factory StudentFactory --model=student
-
+    
 
 Problem: user_id field error
 
