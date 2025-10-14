@@ -317,7 +317,13 @@ Controllers
             });
         }
 
-
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
         To rollback last migration :- php artisan migrate:rollback
         To rollback till n migration :- php artisan migrate:rollback --step=2
 
@@ -417,3 +423,130 @@ Problem: user_id field error
     Run migrations again with:
 
     php artisan migrate:fresh --seed
+
+    Create Country seeder :-php artisan make:seeder CountriesSeeder
+
+    List of countries :- https://gist.github.com/keeguon/2310008
+
+    Run CountriesSeeder :- php artisan db:seed --class=CountriesSeeder
+
+
+Run sql queries in laravel
+    there are 3 approaches
+
+    1)Raw SQL
+        security :- High risk of SQl injection if not properly handled
+        Performance :- Fastest because it directly intrects with the database.
+        Flexibility :- Fully customizable, allows complex queries.
+        Maintainability :- Harder to maintain and debug, requires manual query writing.
+
+
+
+    2)Query Builder
+        security :- Protects agains SQL injection.
+        Performance :- Faster then Eloquent but slower then Raw SQL
+        Flexibility :- Flexibile, allows complex queries with readable syntax.
+        Maintainability :- Easier to maintain then ROW SQL but lacks full ORM capabilities.
+
+        Ex:- 
+        Insert data using Query Builder
+            DB::table('students')->insert([
+                "studentName" => 'test',
+                "age" => 20,
+                "date_of_birth" => '2005-03-16',
+                "gender" => 'male',
+                "percentage" => 99,
+                "user_id" => 10
+            ]);
+
+        Select data using Query Builder
+            public function getData()
+            {
+                return DB::table('students')->get();                
+            }
+            // get data with limit DB::table('students')->limit(5)->get();
+            // get first row DB::table('students')->first();
+            // get last row DB::table('students')->last();
+            // get data with where case DB::table('students')->where('column','Condition',value);           Ex-where('salary','>=',=10000)
+            // select only required column DB::table('students')->select('name','number');
+
+        update data
+            DB::table('students')->where('id', $id)->update([
+                'studentName' => "student5"
+            ]);
+
+        Delete data 
+            DB::table('students')->where('id', $id)->delete();
+
+        Aggrigate functions in Query Builder
+            public function getStudentsCount()
+            {
+                return DB::table('students')->count();
+            }
+
+    3)Eloquent ORM [Eloquent  Object-Relational Mapping]
+        security :- High secure , Prevents SQL injection
+        Performance :- Slowest because of abstraction overhead
+        Flexibility :- Less Flexibile for hign optimized queries
+        Maintainability :- Easier to maintain follows object-oriented principles
+
+        Insert data using Eloquent ORM
+            $item = new Student();
+            $item->name = 'test';
+            $item->save();
+
+        Select Data 
+            //Eloquent ORM
+            //Student::all();
+
+        create restriction inside model file
+            protected $hidden = [
+                'studentName'
+            ];                  /// it will not display name column and can be use with Eloquent ORM only
+        
+    Where Types
+        simple where
+            Students::where('name','abc');
+    
+        multiple where
+            Students::where('name','abc')->orWhere('id',">=",20);
+    
+        whereAny
+            Students::whereAny(['age','score'],'=',25)->get();          //any from age or score equal to 25
+    
+        whereAll
+            Students::whereAll(['age','score','id'],'=',25)->get();          //all from age and score and id equal to 25
+
+    Query Scope
+        when we reyuier same query output multiple times then the query score is usefull
+
+        the function name should start with scope inside model file
+        Ex :-
+            public function scopeMale($query)
+            {
+                return $query->where('gender', 'male');
+            }
+
+        To access these function 
+            $items = Student::male()->get();           // from controller file, we can further add more conditions as needed
+
+    Soft delete
+        To create soft delete first we needed to add column deleted at for track deleted records
+
+        command to create soft delete mjgration :-  php artisan make:migration addSoftDeleteToStudentsTable
+
+            It does not delete the data but the deleted record does not seleted
+
+        inside controller
+            $item = Student::findOrFail($id);
+            $item->delete();
+
+        To get deleted record   
+            $item = Student::onlyTrashed()->get();          // to selected deleted students
+            $item = Student::withTrashed()->get();          // to selected all students including deleted students
+
+        Restore deleted students
+            $item = Student::withTrashed()->find(7)->restore();     // to restore deleted stuedent
+
+        To permanently delete item
+            Student::find(id)->forceDelete();

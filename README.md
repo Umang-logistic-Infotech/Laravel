@@ -10,6 +10,14 @@
 -   [Master Layout](#master-layout-with-extends-and-yield)
 -   [Controllers](#controllers)
 -   [Migration in Laravel](#migration-in-laravel)
+-   [Migration Rollback Commands](#migration-rollback-commands)
+-   [Working with Models](#working-with-models)
+-   [CRUD Operations with Model and Controller](#crud-operations-with-model-and-controller)
+-   [Factory](#factory)
+-   [Run SQL Queries in Laravel](#run-sql-queries-in-laravel)
+-   [Where Types](#where-types)
+-   [Query Scope](#query-scope)
+-   [Soft Delete](#soft-delete)
 
 ---
 
@@ -475,13 +483,417 @@ public function down(): void
 }
 ```
 
+## Migration Rollback Commands
+
+### Rollback Last Migration
+
+```bash
+php artisan migrate:rollback
+```
+
+### Rollback Till N Migration
+
+```bash
+php artisan migrate:rollback --step=2
+```
+
+### Reset Database
+
+```bash
+php artisan migrate:reset
+```
+
+It will reset the database, deletes every table and its data.
+
+### Fresh Migration
+
+```bash
+php artisan migrate:fresh
+```
+
+It will delete all our migrations and re-migrate again.
+
+---
+
+## Working with Models
+
+### Create Model
+
+```bash
+php artisan make:model model_name
+```
+
+It will create `model_name.php` file under `Http/Models` folder.
+
+### Create Model with Controller
+
+```bash
+php artisan make:model model_name -mc
+```
+
+-   `m` for migration
+-   `c` for controller
+
+---
+
+## CRUD Operations with Model and Controller
+
+### Select All Records
+
+```php
+public function index()
+{
+    return teacher::all();
+}
+```
+
+### Insert Record
+
+```php
+public function add()
+{
+    $item = new teacher();
+    $item->name = 'test';
+    $item->save();
+    return teacher::all();
+}
+```
+
+### Select Single Record
+
+```php
+public function getTeacher($id)
+{
+    $item = teacher::findOrFail($id);
+    return $item;
+}
+```
+
+### Update Record
+
+```php
+public function updateTeacher($id)
+{
+    $item = teacher::findOrFail($id);
+    $item->name = 'abcd';
+    $item->update();
+    return "updated";
+}
+```
+
+### Delete Record
+
+```php
+public function deleteTeacher($id)
+{
+    $item = teacher::findOrFail($id);
+    $item->delete();
+    return "deleted";
+}
+```
+
+---
+
+## Routes for CRUD
+
+```php
+Route::get('teachers', [TeacherController::class, 'index']);
+Route::get('addTeacher', [TeacherController::class, 'add']);
+Route::get('getTeacher/{id}', [TeacherController::class, 'getTeacher']);
+Route::get('updateTeacher/{id}', [TeacherController::class, 'updateTeacher']);
+Route::get('deleteTeacher/{id}', [TeacherController::class, 'deleteTeacher']);
+```
+
+---
+
+## Factory
+
+Used for testing / temporary data.
+
+### Create Factory Command
+
+```bash
+php artisan make:factory factoryName --model=model_name
+```
+
+**Example:**
+
+```bash
+php artisan make:factory StudentFactory --model=student
+```
+
+### Problem: user_id Field Error
+
+**Error:** Field 'user_id' doesn't have a default value during seeding.
+
+**Cause:** user_id column is required but not provided in factory or seeder.
+
+**Fix:**
+
+Add `user_id` to `StudentFactory.php` like this:
+
+```php
+'user_id' => User::factory(),
+```
+
+This makes sure each student is linked to a user.
+
+**Optional:** Make user_id nullable
+
+Change migration to:
+
+```php
+$table->foreignId('user_id')->nullable()->constrained('users');
+```
+
+Run migrations again with:
+
+```bash
+php artisan migrate:fresh --seed
+```
+
+### Create Country Seeder
+
+```bash
+php artisan make:seeder CountriesSeeder
+```
+
+**List of countries:** [https://gist.github.com/keeguon/2310008](https://gist.github.com/keeguon/2310008)
+
+### Run CountriesSeeder
+
+```bash
+php artisan db:seed --class=CountriesSeeder
+```
+
+---
+
+## Run SQL Queries in Laravel
+
+There are 3 approaches:
+
+### 1. Raw SQL
+
+-   **Security:** High risk of SQL injection if not properly handled
+-   **Performance:** Fastest because it directly interacts with the database
+-   **Flexibility:** Fully customizable, allows complex queries
+-   **Maintainability:** Harder to maintain and debug, requires manual query writing
+
+### 2. Query Builder
+
+-   **Security:** Protects against SQL injection
+-   **Performance:** Faster than Eloquent but slower than Raw SQL
+-   **Flexibility:** Flexible, allows complex queries with readable syntax
+-   **Maintainability:** Easier to maintain than Raw SQL but lacks full ORM capabilities
+
+#### Insert Data Using Query Builder
+
+```php
+DB::table('students')->insert([
+    "studentName" => 'test',
+    "age" => 20,
+    "date_of_birth" => '2005-03-16',
+    "gender" => 'male',
+    "percentage" => 99,
+    "user_id" => 10
+]);
+```
+
+#### Select Data Using Query Builder
+
+```php
+public function getData()
+{
+    return DB::table('students')->get();
+}
+```
+
+**Additional Query Options:**
+
+```php
+// Get data with limit
+DB::table('students')->limit(5)->get();
+
+// Get first row
+DB::table('students')->first();
+
+// Get last row
+DB::table('students')->last();
+
+// Get data with where clause
+DB::table('students')->where('column', 'Condition', value);
+// Example: where('salary', '>=', 10000)
+
+// Select only required columns
+DB::table('students')->select('name', 'number');
+```
+
+#### Update Data
+
+```php
+DB::table('students')->where('id', $id)->update([
+    'studentName' => "student5"
+]);
+```
+
+#### Delete Data
+
+```php
+DB::table('students')->where('id', $id)->delete();
+```
+
+#### Aggregate Functions in Query Builder
+
+```php
+public function getStudentsCount()
+{
+    return DB::table('students')->count();
+}
+```
+
+### 3. Eloquent ORM [Eloquent Object-Relational Mapping]
+
+-   **Security:** High secure, prevents SQL injection
+-   **Performance:** Slowest because of abstraction overhead
+-   **Flexibility:** Less flexible for highly optimized queries
+-   **Maintainability:** Easier to maintain, follows object-oriented principles
+
+#### Insert Data Using Eloquent ORM
+
+```php
+$item = new Student();
+$item->name = 'test';
+$item->save();
+```
+
+#### Select Data
+
+```php
+// Eloquent ORM
+Student::all();
+```
+
+#### Create Restriction Inside Model File
+
+```php
+protected $hidden = [
+    'studentName'
+];
+```
+
+It will not display the name column and can be used with Eloquent ORM only.
+
+---
+
+## Where Types
+
+### Simple Where
+
+```php
+Students::where('name', 'abc');
+```
+
+### Multiple Where
+
+```php
+Students::where('name', 'abc')->orWhere('id', ">=", 20);
+```
+
+### whereAny
+
+```php
+Students::whereAny(['age', 'score'], '=', 25)->get();
+```
+
+Any from age or score equal to 25.
+
+### whereAll
+
+```php
+Students::whereAll(['age', 'score', 'id'], '=', 25)->get();
+```
+
+All from age and score and id equal to 25.
+
+---
+
+## Query Scope
+
+When we require same query output multiple times then the query scope is useful.
+
+The function name should start with `scope` inside model file.
+
+**Example:**
+
+```php
+public function scopeMale($query)
+{
+    return $query->where('gender', 'male');
+}
+```
+
+### To Access These Functions
+
+```php
+$items = Student::male()->get();
+```
+
+From controller file, we can further add more conditions as needed.
+
+---
+
+## Soft Delete
+
+To create soft delete, first we need to add column `deleted_at` for tracking deleted records.
+
+### Command to Create Soft Delete Migration
+
+```bash
+php artisan make:migration addSoftDeleteToStudentsTable
+```
+
+It does not delete the data but the deleted record does not get selected.
+
+### Inside Controller
+
+```php
+$item = Student::findOrFail($id);
+$item->delete();
+```
+
+### Get Deleted Records
+
+```php
+// To select deleted students
+$item = Student::onlyTrashed()->get();
+
+// To select all students including deleted students
+$item = Student::withTrashed()->get();
+```
+
+### Restore Deleted Students
+
+```php
+// To restore deleted student
+$item = Student::withTrashed()->find(7)->restore();
+```
+
+### To Permanently Delete Item
+
+```php
+Student::find($id)->forceDelete();
+```
+
 ---
 
 ## Additional Resources
 
 -   [Laravel Documentation](https://laravel.com/docs)
 -   [Blade Templates Documentation](https://laravel.com/docs/12.x/blade)
+-   [Laravel Eloquent Documentation](https://laravel.com/docs/eloquent)
+-   [Laravel Query Builder Documentation](https://laravel.com/docs/queries)
+-   [Laravel Migrations Documentation](https://laravel.com/docs/migrations)
 
 ---
 
-**Note:** This guide covers the fundamentals of Laravel routing, controllers, blade templates, and migrations. Always refer to the official Laravel documentation for the most up-to-date information.
+**Note:** This guide covers Laravel Models, CRUD operations, database queries, and advanced features like soft deletes and query scopes. Always refer to the official Laravel documentation for the most up-to-date information.

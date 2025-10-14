@@ -44,11 +44,13 @@ Route::view('/contactUs', 'contactUs');
 
 Route::controller(StudentController::class)->group(function () {
     Route::get('aboutstudent/{id}/{name}', 'aboutStudent');
-    Route::get('students',  'index');
-    Route::get('addStudent', 'add');
+    Route::get('getStudents',  'getStudents');
+    Route::get('getStudentsCount',  'getStudentsCount');
+    Route::get('addStudent', 'addStudent');
     Route::get('getStudent/{id}', 'getStudent');
     Route::get('updateStudent/{id}', 'updateStudent');
     Route::get('deleteStudent/{id}', 'deleteStudent');
+    Route::get('deletedStudents', 'deletedStudents');
 });
 
 Route::controller(TeacherController::class)->group(function () {
