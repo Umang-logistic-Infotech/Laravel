@@ -16,16 +16,17 @@
         </header>
 
         <div class="main-body d-flex overflow-hidden"style="height:85vh;">
-            <aside class="sidebar bg-body-secondary text-white p-3 border rounded " style="width: 250px; height: 100%;">
+            <aside class="sidebar bg-body-secondary text-white p-3 border rounded " style="width: 10%; height: 100%;">
                 @yield('sidebar')
             </aside>
 
-            <div class="content flex-grow-1 p-3 bg-light" style="height: 97%;overflow-y: auto;">
+            <div class="header-content flex-grow-1  bg-light" style="height: 100%;overflow-y:auto;">
                 @yield('content')
+
             </div>
         </div>
 
-        <footer class="footer bg-dark text-light text-center fixed-bottom p-3 ">
+        <footer class="footer bg-dark text-light text-center fixed-bottom p-1 ">
             @yield('footer')
         </footer>
     </div>

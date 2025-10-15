@@ -7,7 +7,7 @@ use App\Http\Controllers\ResourceController;
 use App\Http\Controllers\TeacherController;
 
 Route::get('/', function () {
-    $students = (new StudentController)->index();;
+    $students = (new StudentController)->index(request());;
     return view('home', compact('students'));
 });
 
@@ -42,15 +42,17 @@ Route::resource('/resource', ResourceController::class);
 
 Route::view('/aboutUs', 'aboutUs');
 Route::view('/contactUs', 'contactUs');
+// Route::view('/editStudent', 'updateStudent');
 
 Route::controller(StudentController::class)->group(function () {
     Route::get('aboutstudent/{id}/{name}', 'aboutStudent');
     Route::get('getStudents',  'getStudents');
     Route::get('getStudentsCount',  'getStudentsCount');
     Route::get('addStudent', 'addStudent');
+    Route::post('createStudent', 'createStudent');
     Route::get('getStudent/{id}', 'getStudent');
-    Route::get('updateStudent/{id}', 'updateStudent');
-    Route::get('deleteStudent/{id}', 'deleteStudent');
+    Route::post('updateStudent/{id}', 'updateStudent');
+    Route::delete('deleteStudent/{id}', 'deleteStudent');
     Route::get('deletedStudents', 'deletedStudents');
 });
 

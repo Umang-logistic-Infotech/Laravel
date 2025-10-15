@@ -18,6 +18,13 @@
 -   [Where Types](#where-types)
 -   [Query Scope](#query-scope)
 -   [Soft Delete](#soft-delete)
+-   [Implement Search Optional](#implement-search-optional)
+-   [Display Images](#display-images)
+-   [Insert Data from GUI](#insert-data-from-gui)
+-   [CSRF Protection](#csrf-protection)
+-   [Edit Student](#edit-student)
+-   [Delete Student](#delete-student)
+-   [Validation](#validation)
 
 ---
 
@@ -233,11 +240,20 @@ Defines content for a specific section that will be injected into the layout's `
 **Example:**
 
 ```blade
-@section('title', 'Home Page')
+        @section('title', 'Home Page')
 
-@section('content')
-    <p>Welcome to the home page!</p>
-@endsection
+        or
+
+        @section('content')
+            <p>Welcome to the home page!</p>
+        @endsection
+
+
+        or
+
+        @section('title')
+            @include('Components.title', ['title' => 'Home Page'])
+        @endsection
 ```
 
 ### @show
@@ -886,6 +902,333 @@ Student::find($id)->forceDelete();
 
 ---
 
+# Laravel Forms, Search and Validation Guide
+
+## Implement Search Optional
+
+Add request parameter to function to handle the incoming request.
+
+### Route
+
+```php
+Route::get('/', function () {
+    $students = (new StudentController)->index(request());
+    return view('home', compact('students'));
+});
+```
+
+### Controller
+
+#### WITHOUT LIMITATION/PAGINATION/like query
+
+```php
+public function index(Request $request)
+{
+    // return Student::all();
+    return Student::when($request->search, function ($query) use ($request) {
+        return $query->whereAny([
+            'studentName',
+            'age',
+            'percentage',
+            'gender',
+            'date_of_birth'
+        ], $request->search);  // SEARCH QUERY
+    })->get();  // WITHOUT LIMITATION/PAGINATION
+}
+```
+
+#### WITHOUT LIMITATION/PAGINATION with like query
+
+```php
+public function index(Request $request)
+{
+    // return Student::all();
+    return Student::when($request->search, function ($query) use ($request) {
+        return $query->whereAny([
+            'studentName',
+            'age',
+            'percentage',
+            'gender',
+            'date_of_birth'
+        ], 'like', '%' . $request->search . '%');  // SEARCH LIKE QUERY
+    })->get();  // WITHOUT LIMITATION/PAGINATION
+}
+```
+
+#### WITH LIMITATION/PAGINATION/like query
+
+```php
+public function index(Request $request)
+{
+    // return Student::all();
+    return Student::when($request->search, function ($query) use ($request) {
+        return $query->whereAny([
+            'studentName',
+            'age',
+            'percentage',
+            'gender',
+            'date_of_birth'
+        ], 'like', '%' . $request->search . '%');  // SEARCH LIKE QUERY
+    })->paginate(10);  // WITH LIMITATION/PAGINATION
+}
+```
+
+### Get the Requested Value from URL
+
+```blade
+<input type="search" placeholder="Enter student name" id="search"
+       name="search" value="{{ request('search') }}" />
+```
+
+### Handle PAGINATION with Bootstrap Pagination
+
+We also need to add CDN link to main `app.blade.php` file.
+
+```blade
+<div class="pagination">
+    {{ $students->links('pagination::bootstrap-5') }}
+</div>
+```
+
+### Append All Previous Requests
+
+`appends(request()->query())` for previous requests.
+
+```blade
+<div class="pagination">
+    {{ $students->appends(request()->query())->links('pagination::bootstrap-5') }}
+</div>
+```
+
+---
+
+## Display Images
+
+The images should be inside the public folder.
+
+```blade
+<img src="{{ asset('images/delete.svg') }}" class="deleteButton m-0" alt="Delete">
+```
+
+---
+
+## Insert Data from GUI
+
+### Route to Create Student
+
+```php
+Route::post('createStudent', 'createStudent');
+```
+
+### Form Action to Submit Insert Data
+
+```blade
+<form method="POST" action="{{ URL('/createStudent') }}">
+```
+
+But here we need to write `@csrf` after this form line to prevent against attacks. If we did not write it, we get **419 Page Expired** error.
+
+```blade
+<form method="POST" action="{{ URL('/createStudent') }}">
+    @csrf
+```
+
+---
+
+## CSRF Protection
+
+### Use of @csrf
+
+The `@csrf` Blade directive in Laravel is used to protect web applications from **Cross-Site Request Forgery (CSRF)** attacks. CSRF is a type of attack where a malicious website tricks an authenticated user into submitting a form or making a request to another website without their knowledge, potentially leading to unauthorized actions.
+
+### Our Actual Code
+
+```blade
+<form method="POST" action="/submit-data">
+    @csrf
+    <!-- Other form fields -->
+    <button type="submit">Submit</button>
+</form>
+```
+
+### This Will Render As
+
+```html
+<form method="POST" action="/submit-data">
+    <input type="hidden" name="_token" value="YOUR_CSRF_TOKEN_HERE" />
+    <!-- Other form fields -->
+    <button type="submit">Submit</button>
+</form>
+```
+
+### How @csrf Works
+
+1. **CSRF Token Generation:** Laravel automatically generates a unique CSRF "token" for each active user session. This token is a random, unguessable string that is associated with the user's session.
+
+2. **Inclusion in Forms:** When you use the `@csrf` Blade directive within an HTML form in your Laravel application, it generates a hidden input field containing this unique CSRF token.
+
+3. **Token Validation:** When the form is submitted, Laravel's `VerifyCsrfToken` middleware automatically checks if the submitted token matches the one stored in the user's session. If the tokens don't match or the token is missing, Laravel will reject the request, typically with a **419 HTTP status code (Page Expired)**, preventing the CSRF attack.
+
+---
+
+## Edit Student
+
+Same as create student, just 1 change: `$student->update();`
+
+---
+
+## Delete Student
+
+To handle delete with confirm dialog:
+
+```blade
+<form action="{{ URL('/deleteStudent/' . $student->id) }}" method="POST"
+      onsubmit="return confirm('Are you sure you want to delete this student?')">
+    @csrf
+    @method('delete')
+    <button type="submit" class="deleteButton m-0" style="background: none; border: none;">
+        <img src="{{ asset('images/delete.svg') }}" alt="Delete">
+    </button>
+</form>
+```
+
+**Notes:**
+
+-   Button to handle submit form
+-   Form to handle confirm dialog
+-   We also need to change method to delete for delete record
+
+---
+
+## Validation
+
+### Validation from Controller
+
+Verify all fields before inserting/updating:
+
+```php
+$request->validate([
+    'studentName' => 'required|string|max:255',
+    'studentUserId' => 'required|integer|max:255',
+    'studentAge' => 'required|integer|min:10|max:50',
+    'studentDateOfBirth' => 'required|date',
+    'studentGender' => 'required|in:male,female',
+    'studentPercentage' => 'required|integer|min:0|max:100'
+]);
+```
+
+### Display Errors Inside View Component
+
+```blade
+@if ($errors->any())
+    <div class="alert alert-danger">
+        <ul>
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
+```
+
+### Custom Error Messages
+
+```php
+$request->validate([
+    'studentName' => 'required|string|max:255',
+    'studentUserId' => 'required|integer|max:255',
+    'studentAge' => 'required|integer|min:10|max:50',
+    'studentDateOfBirth' => 'required|date',
+    'studentGender' => 'required|in:male,female',
+    'studentPercentage' => 'required|integer|min:0|max:100'
+], [
+    'studentName.required' => 'Student name is required',
+    'studentAge.max' => 'Age must be under 50',
+    'studentDateOfBirth.required' => 'Date of birth is required',
+    'studentGender.required' => 'Gender is required',
+    'studentPercentage.required' => 'Percentage is required',
+    'studentUserId.required' => 'User id is required'
+]);
+```
+
+---
+
+## Form Request Validation
+
+For clean and clear coding, use Form Request classes.
+
+### Create Form Request
+
+**Command:**
+
+```bash
+php artisan make:request StudentAddRequest
+```
+
+### Configure Form Request
+
+Then go to `Http/Request` folder and make changes:
+
+#### 1. Change Authorization
+
+Make the return type from `false` to `true`:
+
+```php
+public function authorize(): bool
+{
+    return true;
+}
+```
+
+#### 2. Add Validation Rules
+
+Put all rules under this method:
+
+```php
+public function rules(): array
+{
+    return [
+        'studentName' => 'required|string|max:255',
+        'studentUserId' => 'required|integer|max:255',
+        'studentAge' => 'required|integer|min:10|max:50',
+        'studentDateOfBirth' => 'required|date',
+        'studentGender' => 'required|in:male,female',
+        'studentPercentage' => 'required|integer|min:0|max:100'
+    ];
+}
+```
+
+#### 3. Add Custom Error Messages
+
+Add your custom error handling messages to a new method `messages()`:
+
+```php
+public function messages()
+{
+    return [
+        'studentName.required' => 'Student name is required',
+        'studentAge.max' => 'Age must be under 50',
+        'studentDateOfBirth.required' => 'Date of birth is required',
+        'studentGender.required' => 'Gender is required',
+        'studentPercentage.required' => 'Percentage is required',
+        'studentUserId.required' => 'User id is required'
+    ];
+}
+```
+
+#### 4. Update Controller Method
+
+Change the request argument from `(Request $request)` to `(StudentAddRequest $request)`:
+
+```php
+public function createStudent(StudentAddRequest $request)
+{
+    // Your logic here
+}
+```
+
+---
+
 ## Additional Resources
 
 -   [Laravel Documentation](https://laravel.com/docs)
@@ -893,7 +1236,10 @@ Student::find($id)->forceDelete();
 -   [Laravel Eloquent Documentation](https://laravel.com/docs/eloquent)
 -   [Laravel Query Builder Documentation](https://laravel.com/docs/queries)
 -   [Laravel Migrations Documentation](https://laravel.com/docs/migrations)
+-   [Laravel Validation Documentation](https://laravel.com/docs/validation)
+-   [Laravel Form Requests Documentation](https://laravel.com/docs/validation#form-request-validation)
+-   [Laravel CSRF Protection Documentation](https://laravel.com/docs/csrf)
 
 ---
 
-**Note:** This guide covers Laravel Models, CRUD operations, database queries, and advanced features like soft deletes and query scopes. Always refer to the official Laravel documentation for the most up-to-date information.
+**Note:** This guide is for reference purpose only.

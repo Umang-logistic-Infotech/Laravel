@@ -1,6 +1,6 @@
 <ul class="nav flex-column">
     <li class="nav-item ">
-        <a class="nav-link" href="{{ url('/') }}" target="_blank">Dashboard</a>
+        <a class="nav-link" href="{{ url('/') }}">Dashboard</a>
     </li>
     <li class="nav-item">
         <a class="nav-link" href="{{ url('/aboutUs') }}" target="_blank">About Us</a>

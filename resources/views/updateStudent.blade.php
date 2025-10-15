@@ -1,18 +1,20 @@
 @extends('layout.app')
 
 
-@section('title', 'Home Page')
+@section('title', 'Edit Student Page')
 
 @section('header')
-    @include('Components.header', ['pagename' => 'Home'])
+    @include('Components.header', ['pagename' => 'Edit Student'])
 @endsection
+
 
 @section('style')
     @include('Components.style')
 
 @endsection
 @section('content')
-    @include('Components.content')
+    @include('Components.updateStudentContent')
+
 @endsection
 
 
