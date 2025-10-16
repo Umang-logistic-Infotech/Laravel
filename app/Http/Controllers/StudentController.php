@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StudentAddRequest;
+use App\Http\Requests\StudentUpdateRequest;
 use Illuminate\Http\Request;
 use App\Models\Student;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 use function Laravel\Prompts\alert;
 
@@ -33,6 +35,10 @@ class StudentController extends Controller
 
     public function createStudent(StudentAddRequest $request)
     {
+        $imagePath = null;
+        if ($request->hasFile('studentImage')) {
+            $imagePath = $request->file('studentImage')->store('photoes', 'public');
+        }
         $Student = new Student();
         $Student->studentName = $request->studentName;
         $Student->age = $request->studentAge;
@@ -40,6 +46,7 @@ class StudentController extends Controller
         $Student->date_of_birth = $request->studentDateOfBirth;
         $Student->gender = $request->studentGender;
         $Student->user_id = $request->studentUserId;
+        $Student->profileImage = $imagePath;
         $Student->save();
         return redirect('/');
     }
@@ -91,40 +98,52 @@ class StudentController extends Controller
         return view('updateStudent', compact('Student'));
     }
 
-    public function updateStudent(Request $request, $id)
+    public function updateStudent(StudentUpdateRequest $request, $id)
     {
-        $request->validate([
-            'studentName' => 'required|string|max:255',
-            'studentUserId' => 'required|integer|max:255',
-            'studentAge' => 'required|integer|min:10|max:50',
-            'studentDateOfBirth' => 'required|date',
-            'studentGender' => 'required|in:male,female',
-            'studentPercentage' => 'required|integer|min:0|max:100'
-        ], [
-            'studentName.required' => 'Student name is required',
-            'studentAge.max' => 'Age must be under 50',
-            'studentDateOfBirth.required' => 'Date of birth is required',
-            'studentGender.required' => 'Gender is required',
-            'studentPercentage.required' => 'Percentage is required',
-            'studentUserId.required' => 'User id is required'
-        ]);
-
-        //Eloquent ORM
         $student = Student::findOrFail($id);
+
+        $imagePath = null;
+        if ($student->profileImage) {
+            Storage::disk('public')->delete($student->profileImage);
+        }
+        if ($request->hasFile('studentImage')) {
+            $imagePath = $request->file('studentImage')->store('photoes', 'public');
+        }
+        // $request->validate([
+        //     'studentName' => 'required|string|max:255',
+        //     'studentUserId' => 'required|integer|max:255',
+        //     'studentAge' => 'required|integer|min:10|max:50',
+        //     'studentDateOfBirth' => 'required|date',
+        //     'studentGender' => 'required|in:male,female',
+        //     'studentPercentage' => 'required|integer|min:0|max:100'
+        // ], [
+        //     'studentName.required' => 'Student name is required',
+        //     'studentAge.max' => 'Age must be under 50',
+        //     'studentDateOfBirth.required' => 'Date of birth is required',
+        //     'studentGender.required' => 'Gender is required',
+        //     'studentPercentage.required' => 'Percentage is required',
+        //     'studentUserId.required' => 'User id is required'
+        // ]);
+
+
         $student->studentName = $request->studentName;
         $student->age = $request->studentAge;
         $student->percentage = $request->studentPercentage;
         $student->date_of_birth = $request->studentDateOfBirth;
         $student->gender = $request->studentGender;
         $student->user_id = $request->studentUserId;
+        $student->profileImage = $imagePath;
         $student->update();
         return redirect('/');
     }
 
     public function deleteStudent($id)
     {
-        $item = Student::findOrFail($id);
-        $item->delete();
+        $student = Student::findOrFail($id);
+        if ($student->profileImage) {
+            Storage::disk('public')->delete($student->profileImage);
+        }
+        $student->delete();
         // alert("Deleted", $id);
         // return redirect('/');
 

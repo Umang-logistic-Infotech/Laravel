@@ -1,7 +1,7 @@
 <div class="container-fluid">
 
     <div class="d-flex align-items-center ">
-        <form action={{ URL('/') }} method="GET">
+        <form action={{ URL('/') }} method="GET" enctype="multipart/form-data">
             <div class="search p-2">
                 {{-- <div class="search position-fixed"> --}}
                 <input type="search" placeholder="Enter student name" id="search" name="search"
