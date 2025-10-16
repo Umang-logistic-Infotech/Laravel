@@ -17,6 +17,7 @@
 <table class="table table-bordered table-striped p-1">
     <thead class="table-dark">
 
+        <th> Profile Photo </th>
         <th> ID </th>
         <th> Student Name </th>
         <th> Age </th>
@@ -29,6 +30,11 @@
     <tbody class="table-group-divider">
         @foreach ($students as $student)
             <tr>
+                <td>
+                    @if ($student->profileImage)
+                        <img src="{{ asset('storage/' . $student->profileImage) }}" width="50" />
+                    @endif
+                </td>
                 <td>{{ $student->id }}</td>
                 <td>{{ $student->studentName }}</td>
                 <td>{{ $student->age }}</td>

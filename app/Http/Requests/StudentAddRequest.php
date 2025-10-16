@@ -28,7 +28,8 @@ class StudentAddRequest extends FormRequest
             'studentAge' => 'required|integer|min:10|max:50',
             'studentDateOfBirth' => 'required|date',
             'studentGender' => 'required|in:male,female',
-            'studentPercentage' => 'required|integer|min:0|max:100'
+            'studentPercentage' => 'required|integer|min:0|max:100',
+            'studentImage' => 'nullable|image|mimes:png,jpg,jpeg,svg,gif|max:2048'
         ];
     }
 
@@ -40,7 +41,9 @@ class StudentAddRequest extends FormRequest
             'studentDateOfBirth.required' => 'Date of birth is required',
             'studentGender.required' => 'Gender is required',
             'studentPercentage.required' => 'Percentage is required',
-            'studentUserId.required' => 'User id is required'
+            'studentUserId.required' => 'User id is required',
+            'studentImage.image' => 'only images are allowed',
+            'studentImage.max' => 'only images under 2 mb is allowed'
         ];
     }
 }

@@ -8,7 +8,7 @@
             </ul>
         </div>
     @endif
-    <form method="POST" action="{{ URL('/createStudent') }}">
+    <form method="POST" action="{{ URL('/createStudent') }}" enctype="multipart/form-data">
 
         @csrf
         <div class="row m-4 p-2 border rounded">
@@ -19,6 +19,13 @@
             </div>
         </div>
 
+        <div class="row m-4 p-2 border rounded">
+            <label for="studentImage" class="col-sm-2  col-form-label">Student Profile Image :</label>
+            <div class="col-sm-10">
+                <input type="file" class="form-control" id="studentImage" name="studentImage"
+                    placeholder="Student Image" aria-label="studentAge" accept="image/*">
+            </div>
+        </div>
         <div class="row m-4 p-2 border rounded">
             <label for="studentAge" class="col-sm-2  col-form-label">Student Age :</label>
             <div class="col-sm-10">

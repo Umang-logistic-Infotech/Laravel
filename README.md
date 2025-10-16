@@ -25,6 +25,10 @@
 -   [Edit Student](#edit-student)
 -   [Delete Student](#delete-student)
 -   [Validation](#validation)
+-   [Retain Old Values After Error](#retain-old-values-after-error)
+-   [File Storage in Laravel](#file-storage-in-laravel)
+-   [Eloquent Relationships](#eloquent-relationships)
+-   [Laravel 12 Authentication Packages](#laravel-12-authentication-packages)
 
 ---
 
@@ -1227,6 +1231,431 @@ public function createStudent(StudentAddRequest $request)
 }
 ```
 
+# Laravel File Storage, Relations and Authentication
+
+## Retain Old Values After Error
+
+To get old values back after error, replace:
+
+```blade
+value="{{ $Student->studentName }}"
+```
+
+With:
+
+```blade
+value="{{ old('studentName') }}"
+```
+
+---
+
+## File Storage in Laravel
+
+### Add Enctype to Form Element
+
+```blade
+<form enctype="multipart/form-data">
+```
+
+### Check if Image is Selected or Not
+
+```php
+$imagePath = null;
+if ($request->hasFile('studentImage')) {
+    $imagePath = $request->file('studentImage')->store('photoes', 'public');
+}
+```
+
+### Validation for Images
+
+```php
+'studentImage' => 'nullable|image|mimes:png,jpg,jpeg,svg,gif|max:2048'
+```
+
+### Store File Path in Database
+
+Store file at the folder location `storage/photoes`:
+
+```php
+$imagePath = null;
+if ($request->hasFile('studentImage')) {
+    $imagePath = $request->file('studentImage')->store('photoes', 'public');
+}
+$Student->profileImage = $imagePath;
+```
+
+### Display Image in UI
+
+To display image in UI, first we need to create link from storage folder to public folder with command:
+
+```bash
+php artisan storage:link
+```
+
+Then display the image:
+
+```blade
+@if ($student->profileImage)
+    <img src="{{ asset('storage/' . $student->profileImage) }}" width="50" />
+@endif
+```
+
+### Delete Image When User is Deleted
+
+```php
+if ($student->profileImage) {
+    Storage::disk('public')->delete($student->profileImage);
+}
+```
+
+---
+
+## Eloquent Relationships
+
+Eloquent Relationships in Laravel is an ORM (Object-Relational Mapping) tool used to interact with a database in a more object-oriented manner. The relationships define how different models (tables) are related to each other.
+
+### Types of Relationships
+
+1. One to One
+2. Has-One-Through
+3. One to Many
+4. Has-Many-Through
+5. Many to Many
+6. Polymorphic
+
+---
+
+## 1. One-to-One Relationship
+
+A one-to-one relationship means that one record in a model is associated with exactly one record in another model.
+
+### Example
+
+Let's assume we have two models: `User` and `Profile`. Each User has one Profile.
+
+**Database Tables:**
+
+-   `users` table
+-   `profiles` table (contains `user_id` to reference the users table)
+
+**How to Define:**
+
+In the `User` model:
+
+```php
+public function profile() {
+    return $this->hasOne(Profile::class);
+}
+```
+
+In the `Profile` model:
+
+```php
+public function user() {
+    return $this->belongsTo(User::class);
+}
+```
+
+**Accessing the Relation:**
+
+```php
+$user = User::find(1);
+$profile = $user->profile;  // Access the related profile
+```
+
+---
+
+## 2. Has-One-Through Relationship
+
+A has-one-through relationship is used when a model has a one-to-one relationship with another model, but the linking table is in between.
+
+### Example
+
+Let's say we have three models: `Country`, `User`, and `Profile`. A Country has many Users, and each User has one Profile. The country indirectly has one Profile through the User.
+
+**Database Tables:**
+
+-   `countries` table
+-   `users` table (linked to countries)
+-   `profiles` table (linked to users)
+
+**How to Define:**
+
+In the `Country` model:
+
+```php
+public function profile() {
+    return $this->hasOneThrough(Profile::class, User::class);
+}
+```
+
+**Accessing the Relation:**
+
+```php
+$country = Country::find(1);
+$profile = $country->profile;  // Access profile of the country through the user
+```
+
+---
+
+## 3. One-to-Many Relationship
+
+A one-to-many relationship means one record in the first model can be associated with many records in the second model.
+
+### Example
+
+Consider a `Post` and `Comment` model. A single Post can have many Comments.
+
+**Database Tables:**
+
+-   `posts` table
+-   `comments` table (contains `post_id` to reference the posts table)
+
+**How to Define:**
+
+In the `Post` model:
+
+```php
+public function comments() {
+    return $this->hasMany(Comment::class);
+}
+```
+
+In the `Comment` model:
+
+```php
+public function post() {
+    return $this->belongsTo(Post::class);
+}
+```
+
+**Accessing the Relation:**
+
+```php
+$post = Post::find(1);
+$comments = $post->comments;  // Get all comments related to this post
+```
+
+---
+
+## 4. Has-Many-Through Relationship
+
+A has-many-through relationship is used when you want to access a model's related models via an intermediate model, but there is no direct foreign key in the intermediate table for the relationship.
+
+### Example
+
+Let's say we have three models: `Country`, `User`, and `Post`. A Country has many Users, and each User has many Posts. The country indirectly has many Posts through Users.
+
+**Database Tables:**
+
+-   `countries` table
+-   `users` table (linked to countries)
+-   `posts` table (linked to users)
+
+**How to Define:**
+
+In the `Country` model:
+
+```php
+public function posts() {
+    return $this->hasManyThrough(Post::class, User::class);
+}
+```
+
+**Accessing the Relation:**
+
+```php
+$country = Country::find(1);
+$posts = $country->posts;  // Get all posts related to the country through users
+```
+
+---
+
+## 5. Many-to-Many Relationship
+
+A many-to-many relationship means that multiple records in one model can be associated with multiple records in another model.
+
+### Example
+
+Consider `Role` and `User` models. A User can have many Roles, and a Role can be assigned to many Users.
+
+**Database Tables:**
+
+-   `users` table
+-   `roles` table
+-   `role_user` pivot table (containing `user_id` and `role_id`)
+
+**How to Define:**
+
+In the `User` model:
+
+```php
+public function roles() {
+    return $this->belongsToMany(Role::class);
+}
+```
+
+In the `Role` model:
+
+```php
+public function users() {
+    return $this->belongsToMany(User::class);
+}
+```
+
+**Accessing the Relation:**
+
+```php
+$user = User::find(1);
+$roles = $user->roles;  // Get all roles assigned to this user
+```
+
+**To Attach a Role to a User:**
+
+```php
+$user->roles()->attach($roleId);
+```
+
+**To Detach a Role from a User:**
+
+```php
+$user->roles()->detach($roleId);
+```
+
+---
+
+## 6. Polymorphic Relationships
+
+A polymorphic relationship allows a model to belong to more than one other model on a single association.
+
+### Example
+
+Consider a `Comment` model that can belong to both `Post` and `Video` models. A Comment can be made on either a Post or a Video, so instead of creating two separate tables for comments (post_comments and video_comments), we use a single comments table with a polymorphic relationship.
+
+**Database Tables:**
+
+-   `posts` table
+-   `videos` table
+-   `comments` table (containing `commentable_id` and `commentable_type` to reference both Post and Video)
+
+**How to Define:**
+
+In the `Post` model:
+
+```php
+public function comments() {
+    return $this->morphMany(Comment::class, 'commentable');
+}
+```
+
+In the `Video` model:
+
+```php
+public function comments() {
+    return $this->morphMany(Comment::class, 'commentable');
+}
+```
+
+In the `Comment` model:
+
+```php
+public function commentable() {
+    return $this->morphTo();
+}
+```
+
+**Accessing the Relation:**
+
+```php
+$post = Post::find(1);
+$comments = $post->comments;  // Get all comments related to the post
+
+$video = Video::find(1);
+$comments = $video->comments;  // Get all comments related to the video
+```
+
+**To Associate a Comment with a Post or Video:**
+
+```php
+$comment = new Comment();
+$comment->body = 'Nice post!';
+$post->comments()->save($comment);  // This will automatically set commentable_type to 'Post'
+```
+
+---
+
+## Summary of Eloquent Relationships
+
+| Relationship         | Description                                                                                        |
+| -------------------- | -------------------------------------------------------------------------------------------------- |
+| **One-to-One**       | One record in model A is related to one record in model B                                          |
+| **Has-One-Through**  | One model (A) has one related model (C), but the relationship is through an intermediary model (B) |
+| **One-to-Many**      | One record in model A can have many related records in model B                                     |
+| **Has-Many-Through** | One model (A) can have many related models (C) through an intermediary model (B)                   |
+| **Many-to-Many**     | Many records in model A can be associated with many records in model B through a pivot table       |
+| **Polymorphic**      | A model can belong to more than one model, using a single relationship column (type and ID)        |
+
+These relationships allow you to design more complex and flexible data models in your Laravel applications.
+
+---
+
+## Laravel 12 Authentication Packages
+
+Laravel 12 offers four main authentication packages: **Bootstrap UI**, **Jetstream**, **Fortify**, and **Breeze**.
+
+### Comparison Table
+
+| Feature / Package             | Bootstrap UI                                | Jetstream                                                                  | Fortify                                                                                      | Breeze                                                       |
+| ----------------------------- | ------------------------------------------- | -------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| **Primary Focus**             | Basic authentication with minimal setup     | Comprehensive authentication with additional features                      | Backend-focused authentication (no UI)                                                       | Simple authentication with basic UI                          |
+| **User Interface (UI)**       | Yes, includes Bootstrap-based UI            | Yes, with Tailwind CSS and a complete UI                                   | No built-in UI (only API responses)                                                          | Yes, simple UI with Tailwind CSS                             |
+| **Frontend Framework**        | Bootstrap                                   | Tailwind CSS (includes Livewire for interactivity)                         | None (No frontend)                                                                           | Tailwind CSS                                                 |
+| **Authentication Features**   | Login, Register, Forgot Password            | Login, Register, Two-Factor Authentication, Profile Management, API Tokens | Login, Registration, Password Reset, Two-Factor Authentication, Email Verification (via API) | Login, Register, Forgot Password                             |
+| **Two-Factor Authentication** | No                                          | Yes                                                                        | Yes                                                                                          | No                                                           |
+| **API Authentication**        | No                                          | Yes (via Laravel Sanctum)                                                  | Yes (via Laravel Sanctum)                                                                    | No                                                           |
+| **Profile Management**        | No                                          | Yes (with Livewire)                                                        | No                                                                                           | No                                                           |
+| **Team Management**           | No                                          | Yes (Team-based features like creating teams, managing roles)              | No                                                                                           | No                                                           |
+| **Livewire Integration**      | No                                          | Yes                                                                        | No                                                                                           | No                                                           |
+| **Customizable Views**        | Yes, but with Bootstrap components          | Yes, Tailwind-based views (customizable)                                   | N/A (no views included)                                                                      | Yes, simple Tailwind-based views                             |
+| **Multi-Auth Support**        | Yes, requires manual configuration          | Yes, with support for teams and roles                                      | Yes, but requires manual configuration                                                       | Yes, but requires manual configuration                       |
+| **Social Authentication**     | No                                          | Yes, via Laravel Socialite                                                 | No (API-based, no frontend)                                                                  | No                                                           |
+| **Session / Remember Me**     | Yes, built-in support for sessions          | Yes, built-in support for sessions                                         | Yes                                                                                          | Yes                                                          |
+| **Password Reset**            | Yes                                         | Yes                                                                        | Yes                                                                                          | Yes                                                          |
+| **API / SPA Authentication**  | No                                          | Yes, built-in support (via Laravel Sanctum)                                | Yes, supports API/SPA authentication                                                         | No                                                           |
+| **Installation Complexity**   | Low, quick and simple setup                 | Moderate, requires more configuration                                      | High, as it's only backend and requires you to build the UI separately                       | Low, quick and simple setup                                  |
+| **Intended Use Case**         | Basic app with minimal authentication needs | Full-featured apps requiring user management and team collaboration        | API-based apps where authentication is handled via API (no UI)                               | Simple apps with standard authentication needs               |
+| **Supports Laravel Fortify**  | No                                          | Yes                                                                        | Yes                                                                                          | No                                                           |
+| **Backend Focus**             | No                                          | Yes (Livewire + Fortify)                                                   | Yes (completely backend)                                                                     | No                                                           |
+| **Use Case Examples**         | Small apps or basic auth functionality      | SaaS apps, complex user management, and teams                              | API-only apps, mobile apps, or SPAs                                                          | Small apps, rapid prototypes, or simple authentication needs |
+
+---
+
+## Summary of Authentication Packages
+
+### Bootstrap UI
+
+-   **Simple and easy-to-implement** package with minimal authentication features
+-   Comes with **Bootstrap-based UI** components but lacks advanced features like two-factor authentication or team management
+-   **Ideal for:** Small applications where you just need login/register functionalities quickly
+
+### Jetstream
+
+-   **Full-featured authentication system** built with Tailwind CSS
+-   Supports **two-factor authentication, team management, profile management**, and **API token management**
+-   **Recommended for:** More complex apps like SaaS platforms or applications that require real-time features (Livewire)
+
+### Fortify
+
+-   **Backend-focused authentication** package with no UI components
+-   Works well for **API-based applications** or SPAs where you want to handle authentication through an API (using Laravel Sanctum)
+-   **Highly customizable** but requires you to build your own frontend/UI
+
+### Breeze
+
+-   **Simple and minimalistic** authentication solution using Tailwind CSS
+-   Provides the **basic authentication features** such as login, registration, and password reset
+-   **Ideal for:** Small projects, rapid prototyping, or when you need something simple and straightforward without complex features like teams or two-factor authentication
+
 ---
 
 ## Additional Resources
@@ -1239,6 +1668,11 @@ public function createStudent(StudentAddRequest $request)
 -   [Laravel Validation Documentation](https://laravel.com/docs/validation)
 -   [Laravel Form Requests Documentation](https://laravel.com/docs/validation#form-request-validation)
 -   [Laravel CSRF Protection Documentation](https://laravel.com/docs/csrf)
+-   [Laravel File Storage Documentation](https://laravel.com/docs/filesystem)
+-   [Laravel Eloquent Relationships Documentation](https://laravel.com/docs/eloquent-relationships)
+-   [Laravel Authentication Documentation](https://laravel.com/docs/authentication)
+-   [Laravel Breeze Documentation](https://laravel.com/docs/starter-kits#laravel-breeze)
+-   [Laravel Jetstream Documentation](https://jetstream.laravel.com)
 
 ---
 

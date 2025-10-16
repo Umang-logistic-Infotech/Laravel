@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Student;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 use function Laravel\Prompts\alert;
 
@@ -33,6 +34,10 @@ class StudentController extends Controller
 
     public function createStudent(StudentAddRequest $request)
     {
+        $imagePath = null;
+        if ($request->hasFile('studentImage')) {
+            $imagePath = $request->file('studentImage')->store('photoes', 'public');
+        }
         $Student = new Student();
         $Student->studentName = $request->studentName;
         $Student->age = $request->studentAge;
@@ -40,6 +45,7 @@ class StudentController extends Controller
         $Student->date_of_birth = $request->studentDateOfBirth;
         $Student->gender = $request->studentGender;
         $Student->user_id = $request->studentUserId;
+        $Student->profileImage = $imagePath;
         $Student->save();
         return redirect('/');
     }
@@ -63,9 +69,9 @@ class StudentController extends Controller
     public function addStudent()
     {
         //Eloquent ORM
-        // $item = new Student();
-        // $item->name = 'test';
-        // $item->save();
+        // $student = new Student();
+        // $student->name = 'test';
+        // $student->save();
         // return Student::all();
 
 
@@ -87,7 +93,7 @@ class StudentController extends Controller
     {
         $Student = Student::findOrFail($id);
 
-        // return "Student " . $item;
+        // return "Student " . $student;
         return view('updateStudent', compact('Student'));
     }
 
@@ -123,8 +129,12 @@ class StudentController extends Controller
 
     public function deleteStudent($id)
     {
-        $item = Student::findOrFail($id);
-        $item->delete();
+        $student = Student::findOrFail($id);
+
+        if ($student->profileImage) {
+            Storage::disk('public')->delete($student->profileImage);
+        }
+        $student->delete();
         // alert("Deleted", $id);
         // return redirect('/');
 
@@ -134,10 +144,10 @@ class StudentController extends Controller
 
     public function deletedStudents()
     {
-        $item = Student::onlyTrashed()->get();          // to selected deleted students
-        $item = Student::withTrashed()->get();          // to selected all students including deleted students
-        $item = Student::withTrashed()->find(7)->restore();     // to restore deleted stuedent
-        return $item;
+        $student = Student::onlyTrashed()->get();          // to selected deleted students
+        $student = Student::withTrashed()->get();          // to selected all students including deleted students
+        $student = Student::withTrashed()->find(7)->restore();     // to restore deleted stuedent
+        return $student;
     }
 
     // public function  index()

@@ -763,3 +763,341 @@ Page Expired error
 
 
         and change the request argument from (Request $request) to (StudentAddRequest $request)
+
+    To get old values back after error replace value="{{ $Student->studentName }}" with value="old('studentName')"
+
+
+    File storage in laravel
+        add enctype="multipart/form-data" property to form element,
+
+    Check if the image is selected or not
+        $imagePath = null;
+        if ($request->hasFile('studentImage')) {
+            $imagePath = $request->file('studentImage')->store('photoes', 'public');
+        }
+
+    Check Validation    
+        'studentImage' => 'nullable|image|mimes:png,jpg,jpeg,svg,gif|max:2048'
+
+    Store file path in database at the folder location storage/photoes
+        $imagePath = null;
+        if ($request->hasFile('studentImage')) {
+            $imagePath = $request->file('studentImage')->store('photoes', 'public');
+        }
+        $Student->profileImage = $imagePath;
+
+    Display image in ui
+
+        TO display image in ui first we need to create link from storage folder to public folder with command :php artisan storage:link
+
+        @if ($student->profileImage)
+            <img src="{{ asset('storage/' . $student->profileImage) }}" width="50" />
+        @endif
+
+    Delete the image when user is deleted 
+        if ($student->profileImage) {
+            Storage::disk('public')->delete($student->profileImage);
+        }
+
+Eloquent Relation ships
+    1) One to one
+    2) Has-one-Through
+    3) One to many
+    4) has-many-Through
+    5) many to many
+    6) Polymorphic
+
+    Eloquent Relationships in Laravel, which is an ORM (Object-Relational Mapping) tool used in Laravel to interact with a database in a more object-oriented manner. The relationships you mentioned define how different models (tables) are related to each other.
+
+    1) One-to-One Relationship
+
+        A one-to-one relationship means that one record in a model is associated with exactly one record in another model.
+
+        Example:
+
+        Let's assume we have two models: User and Profile. Each User has one Profile.
+
+        Database Tables:
+
+        users table
+
+        profiles table (this contains the user_id to reference the users table)
+
+        How to define:
+
+        In the User model:
+
+        public function profile() {
+            return $this->hasOne(Profile::class);
+        }
+
+
+        In the Profile model:
+
+        public function user() {
+            return $this->belongsTo(User::class);
+        }
+
+        Accessing the relation:
+        $user = User::find(1);
+        $profile = $user->profile;  // Access the related profile
+
+    2) Has-One-Through Relationship
+
+        A has-one-through relationship is used when a model has a one-to-one relationship with another model, but the linking table is in between.
+
+        Example:
+
+        Let's say we have three models: Country, User, and Profile. A Country has many Users, and each User has one Profile. The country indirectly has one Profile through the User.
+
+        Database Tables:
+
+        countries table
+
+        users table (linked to countries)
+
+        profiles table (linked to users)
+
+        How to define:
+
+        In the Country model:
+
+        public function profile() {
+            return $this->hasOneThrough(Profile::class, User::class);
+        }
+
+        Accessing the relation:
+        $country = Country::find(1);
+        $profile = $country->profile;  // Access profile of the country through the user
+
+    3) One-to-Many Relationship
+
+        A one-to-many relationship means one record in the first model can be associated with many records in the second model.
+
+        Example:
+
+        Consider a Post and Comment model. A single Post can have many Comments.
+
+        Database Tables:
+
+        posts table
+
+        comments table (this contains post_id to reference the posts table)
+
+        How to define:
+
+        In the Post model:
+
+        public function comments() {
+            return $this->hasMany(Comment::class);
+        }
+
+
+        In the Comment model:
+
+        public function post() {
+            return $this->belongsTo(Post::class);
+        }
+
+        Accessing the relation:
+        $post = Post::find(1);
+        $comments = $post->comments;  // Get all comments related to this post
+
+    4) Has-Many-Through Relationship
+
+        A has-many-through relationship is used when you want to access a model's related models via an intermediate model, but there is no direct foreign key in the intermediate table for the relationship.
+
+        Example:
+
+        Let's say we have three models: Country, User, and Post. A Country has many Users, and each User has many Posts. The country indirectly has many Posts through Users.
+
+        Database Tables:
+
+        countries table
+
+        users table (linked to countries)
+
+        posts table (linked to users)
+
+        How to define:
+
+        In the Country model:
+
+        public function posts() {
+            return $this->hasManyThrough(Post::class, User::class);
+        }
+
+        Accessing the relation:
+        $country = Country::find(1);
+        $posts = $country->posts;  // Get all posts related to the country through users
+
+    5) Many-to-Many Relationship
+
+        A many-to-many relationship means that multiple records in one model can be associated with multiple records in another model.
+
+        Example:
+
+        Consider Role and User models. A User can have many Roles, and a Role can be assigned to many Users.
+
+        Database Tables:
+
+        users table
+
+        roles table
+
+        role_user pivot table (containing user_id and role_id)
+
+        How to define:
+
+        In the User model:
+
+        public function roles() {
+            return $this->belongsToMany(Role::class);
+        }
+
+
+        In the Role model:
+
+        public function users() {
+            return $this->belongsToMany(User::class);
+        }
+
+        Accessing the relation:
+        $user = User::find(1);
+        $roles = $user->roles;  // Get all roles assigned to this user
+
+
+        To attach a role to a user:
+
+        $user->roles()->attach($roleId);
+
+
+        To detach a role from a user:
+
+        $user->roles()->detach($roleId);
+
+    6) Polymorphic Relationships
+
+        A polymorphic relationship allows a model to belong to more than one other model on a single association.
+
+        Example:
+
+        Consider a Comment model that can belong to both Post and Video models. A Comment can be made on either a Post or a Video, so instead of creating two separate tables for comments (post_comments and video_comments), we use a single comments table with a polymorphic relationship.
+
+        Database Tables:
+
+        posts table
+
+        videos table
+
+        comments table (containing commentable_id and commentable_type to reference both Post and Video)
+
+        How to define:
+
+        In the Post model:
+
+        public function comments() {
+            return $this->morphMany(Comment::class, 'commentable');
+        }
+
+
+        In the Video model:
+
+        public function comments() {
+            return $this->morphMany(Comment::class, 'commentable');
+        }
+
+
+        In the Comment model:
+
+        public function commentable() {
+            return $this->morphTo();
+        }
+
+        Accessing the relation:
+        $post = Post::find(1);
+        $comments = $post->comments;  // Get all comments related to the post
+
+        $video = Video::find(1);
+        $comments = $video->comments;  // Get all comments related to the video
+
+
+        To associate a comment with a Post or Video:
+
+        $comment = new Comment();
+        $comment->body = 'Nice post!';
+        $post->comments()->save($comment);  // This will automatically set commentable_type to 'Post'
+
+    Summary:
+
+        One-to-One: One record in model A is related to one record in model B.
+
+        Has-One-Through: One model (A) has one related model (C), but the relationship is through an intermediary model (B).
+
+        One-to-Many: One record in model A can have many related records in model B.
+
+        Has-Many-Through: One model (A) can have many related models (C) through an intermediary model (B).
+
+        Many-to-Many: Many records in model A can be associated with many records in model B through a pivot table.
+
+        Polymorphic: A model can belong to more than one model, using a single relationship column (type and ID).
+
+        These relationships allow you to design more complex and flexible data models in your Laravel applications.
+            additionalResources/Authentication Packages.png
+
+Laravel 12 Authentication Packages: Bootstrap UI, Jetstream, Fortify, and Breeze.
+    Feature / Package	Bootstrap UI	Jetstream	Fortify	Breeze
+    Primary Focus	Basic authentication with minimal setup	Comprehensive authentication with additional features	Backend-focused authentication (no UI)	Simple authentication with basic UI
+    User Interface (UI)	Yes, includes Bootstrap-based UI	Yes, with Tailwind CSS and a complete UI	No built-in UI (only API responses)	Yes, simple UI with Tailwind CSS
+    Frontend Framework	Bootstrap	Tailwind CSS (includes livewire for interactivity)	None (No frontend)	Tailwind CSS
+    Authentication Features	Login, Register, Forgot Password	Login, Register, Two-Factor Authentication, Profile Management, API Tokens	Login, Registration, Password Reset, Two-Factor Authentication, Email Verification (via API)	Login, Register, Forgot Password
+    Two-Factor Authentication	No	Yes	Yes	No
+    API Authentication	No	Yes (via Laravel Sanctum)	Yes (via Laravel Sanctum)	No
+    Profile Management	No	Yes (with Livewire)	No	No
+    Team Management	No	Yes (Team-based features like creating teams, managing roles)	No	No
+    Livewire Integration	No	Yes	No	No
+    Customizable Views	Yes, but with Bootstrap components	Yes, Tailwind-based views (customizable)	N/A (no views included)	Yes, simple Tailwind-based views
+    Multi-Auth Support	Yes, requires manual configuration	Yes, with support for teams and roles	Yes, but requires manual configuration	Yes, but requires manual configuration
+    Social Authentication	No	Yes, via Laravel Socialite	No (API-based, no frontend)	No
+    Session / Remember Me	Yes, built-in support for sessions	Yes, built-in support for sessions	Yes	Yes
+    Password Reset	Yes	Yes	Yes	Yes
+    API / SPA Authentication	No	Yes, built-in support (via Laravel Sanctum)	Yes, supports API/SPA authentication	No
+    Installation Complexity	Low, quick and simple setup	Moderate, requires more configuration	High, as it's only backend and requires you to build the UI separately	Low, quick and simple setup
+    Intended Use Case	Basic app with minimal authentication needs	Full-featured apps requiring user management and team collaboration	API-based apps where authentication is handled via API (no UI)	Simple apps with standard authentication needs
+    Supports Laravel Fortify	No	Yes	Yes	No
+    Backend Focus	No	Yes (Livewire + Fortify)	Yes (completely backend)	No
+    Use Case Examples	Small apps or basic auth functionality	SaaS apps, complex user management, and teams	API-only apps, mobile apps, or SPAs	Small apps, rapid prototypes, or simple authentication needs
+
+    Summary of Differences:
+
+        Bootstrap UI:
+
+            Simple and easy-to-implement package with minimal authentication features.
+
+            Comes with Bootstrap-based UI components but lacks advanced features like two-factor authentication or team management.
+
+            Ideal for small applications where you just need login/register functionalities quickly.
+
+        Jetstream:
+
+            Full-featured authentication system built with Tailwind CSS.
+
+            Supports two-factor authentication, team management, profile management, and API token management.
+
+            Recommended for more complex apps like SaaS platforms or applications that require real-time features (Livewire).
+
+        Fortify:
+
+            Backend-focused authentication package with no UI components.
+
+            Works well for API-based applications or SPAs where you want to handle authentication through an API (using Laravel Sanctum).
+
+            Highly customizable but requires you to build your own frontend/UI.
+
+        Breeze:
+
+            Simple and minimalistic authentication solution using Tailwind CSS.
+
+            Provides the basic authentication features such as login, registration, and password reset.
+
+            Ideal for small projects, rapid prototyping, or when you need something simple and straightforward without complex features like teams or two-factor authentication.
