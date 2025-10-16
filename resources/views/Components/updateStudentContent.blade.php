@@ -9,7 +9,7 @@
             </ul>
         </div>
     @endif
-    <form method="POST" action="{{ URL('/updateStudent/' . $Student->id) }}">
+    <form method="POST" action="{{ URL('/updateStudent/' . $Student->id) }}" enctype="multipart/form-data">
 
         @csrf
         <div class="row m-4 p-2 border rounded">
@@ -17,6 +17,14 @@
             <div class="col-sm-10">
                 <input type="text" class="form-control" value="{{ $Student->studentName }}" id="studentName"
                     name="studentName" placeholder="Student Name" aria-label="studentName">
+            </div>
+        </div>
+
+        <div class="row m-4 p-2 border rounded">
+            <label for="studentImage" class="col-sm-2  col-form-label">Student Profile Image :</label>
+            <div class="col-sm-10">
+                <input type="file" class="form-control" id="studentImage" name="studentImage"
+                    placeholder="Student Image" aria-label="studentAge" accept="image/*">
             </div>
         </div>
 
