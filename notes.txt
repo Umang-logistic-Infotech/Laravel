@@ -1078,6 +1078,10 @@ Laravel 12 Authentication Packages: Bootstrap UI, Jetstream, Fortify, and Breeze
 
             Ideal for small applications where you just need login/register functionalities quickly.
 
+            to install command :- composer require laravel/ui
+            to uninstall command :- composer remove laravel/ui
+            to run command :-  composer run dev 
+
         Jetstream:
 
             Full-featured authentication system built with Tailwind CSS.
@@ -1086,6 +1090,13 @@ Laravel 12 Authentication Packages: Bootstrap UI, Jetstream, Fortify, and Breeze
 
             Recommended for more complex apps like SaaS platforms or applications that require real-time features (Livewire).
 
+            to install command :- composer require laravel/jetstream 
+            to install command :- php artisan jetstream:install
+                                then choose the Livewire, pest and  Optional settings
+            to run command :-  composer run dev 
+
+
+
         Fortify:
 
             Backend-focused authentication package with no UI components.
@@ -1093,6 +1104,13 @@ Laravel 12 Authentication Packages: Bootstrap UI, Jetstream, Fortify, and Breeze
             Works well for API-based applications or SPAs where you want to handle authentication through an API (using Laravel Sanctum).
 
             Highly customizable but requires you to build your own frontend/UI.
+            to install command :- composer require laravel/fortify 
+
+            publish the vendor file : php artisan vendor:publish
+             then install remaining Packages with npm install
+
+            to uninstall command :- composer remove laravel/breeze
+            to run command :-  composer run dev 
 
         Breeze:
 
@@ -1101,3 +1119,15 @@ Laravel 12 Authentication Packages: Bootstrap UI, Jetstream, Fortify, and Breeze
             Provides the basic authentication features such as login, registration, and password reset.
 
             Ideal for small projects, rapid prototyping, or when you need something simple and straightforward without complex features like teams or two-factor authentication.
+    
+            to install command :- composer require laravel/breeze --dev
+                                php artisan breeze:install
+                                then select blade then yes then pest
+
+            migrate : php artisan migrate
+             then install remaining Packages with npm install
+
+            to uninstall command :- composer remove laravel/breeze
+            to run command :-  composer run dev 
+
+                it will store the access tocken in cookies
