@@ -103,10 +103,11 @@ class StudentController extends Controller
         $student = Student::findOrFail($id);
 
         $imagePath = null;
-        if ($student->profileImage) {
-            Storage::disk('public')->delete($student->profileImage);
-        }
+
         if ($request->hasFile('studentImage')) {
+            if ($student->profileImage) {
+                Storage::disk('public')->delete($student->profileImage);
+            }
             $imagePath = $request->file('studentImage')->store('photoes', 'public');
         }
         // $request->validate([
@@ -144,10 +145,6 @@ class StudentController extends Controller
             Storage::disk('public')->delete($student->profileImage);
         }
         $student->delete();
-        // alert("Deleted", $id);
-        // return redirect('/');
-
-        // DB::table('students')->where('id', $id)->delete();
         return redirect('/');
     }
 
