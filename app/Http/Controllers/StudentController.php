@@ -9,6 +9,7 @@ use App\Models\Student;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
 
 use function Laravel\Prompts\alert;
 
@@ -56,7 +57,8 @@ class StudentController extends Controller
     {
         // Eloquent ORM
         $students = Student::all();
-        return view('home', compact('students'));
+
+        return view('homeOld', compact('students'));
         // return $students;
 
         // return DB::table('students')->limit(5)->get();
@@ -85,17 +87,19 @@ class StudentController extends Controller
         //     "percentage" => 99,
         //     "user_id" => 10
         // ]);
+        $user = Auth::user();
 
-        return view('addStudent');
+        return view('addStudent', compact('user'));
         // return " Add User Page ";
     }
 
     public function getStudent($id)
     {
         $Student = Student::findOrFail($id);
+        $user = Auth::user();
 
         // return "Student " . $item;
-        return view('updateStudent', compact('Student'));
+        return view('updateStudent', compact('Student', 'user'));
     }
 
     public function updateStudent(StudentUpdateRequest $request, $id)

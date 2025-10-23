@@ -1131,3 +1131,17 @@ Laravel 12 Authentication Packages: Bootstrap UI, Jetstream, Fortify, and Breeze
             to run command :-  composer run dev 
 
                 it will store the access tocken in cookies
+
+
+middleware :-
+    Middleware in Laravel serves as a filtering mechanism that sits between the HTTP request and the application logic, allowing developers to inspect, modify, or reject incoming requests before they reach the core application code.
+
+    It provides a convenient way to handle tasks such as authentication, logging, request validation, CSRF protection, and rate limiting without cluttering controllers or routes with this logic.
+
+    Laravel includes built-in middleware like auth and csrf, and developers can create custom middleware using the php artisan make:middleware command, which generates a class in the app/Http/Middleware directory.
+
+    These custom middleware can be registered globally in the app/Http/Kernel.php file, assigned to specific routes or route groups, or applied to controllers using methods like middleware() in Laravel 11 or the constructor in older versions.
+    
+    Middleware can perform actions before or after the request is passed to the next layer, and it can return a response to halt the request flow or pass it along via the $next callback.
+
+Create middleware using command :- php artisan make:middleware TeachersMiddleware

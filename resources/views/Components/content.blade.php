@@ -1,17 +1,18 @@
 <div class="container-fluid">
 
-    <div class="d-flex align-items-center ">
-        <form action={{ URL('/') }} method="GET" enctype="multipart/form-data">
-            <div class="search p-2">
-                {{-- <div class="search position-fixed"> --}}
+    <div class="d-flex justify-content-between align-items-center px-3 py-2">
+        <div class="d-flex align-items-center gap-3">
+            <form action="{{ URL('/') }}" method="GET" enctype="multipart/form-data"
+                class="d-flex align-items-center gap-2">
                 <input type="search" placeholder="Enter student name" id="search" name="search"
-                    value="{{ request('search') }}" />
-                <button type="submit" class="btn border-black">search</button>
-            </div>
+                    value="{{ request('search') }}" class="form-control" />
+                <button type="submit" class="btn btn-outline-dark">Search</button>
+            </form>
 
-        </form>
-        <div>
-            <a class="btn button border rounded" href="{{ URL('/addStudent') }}"> create student</a>
+        </div>
+        <div class="d-flex align-items-center">
+            <a class="btn btn-outline-primary" href="{{ URL('/addStudent') }}">Create Student</a>
+
         </div>
     </div>
 

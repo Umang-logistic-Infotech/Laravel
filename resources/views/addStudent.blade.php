@@ -1,4 +1,4 @@
-@extends('layout.app')
+@extends('layout.appOld')
 
 
 @section('title', 'Add Student Page')
