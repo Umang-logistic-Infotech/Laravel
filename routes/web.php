@@ -10,16 +10,19 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Middleware\AdminMiddleware;
 
 Route::get('/', function () {
+
+    return view('welcome');
+})->middleware('auth');
+
+
+Route::get('/dashboard', function () {
     $students = (new StudentController)->index(request());
     $user = Auth::user();
 
     return view('homeOld', compact('students', 'user'));
-    // return view('welcome');
-})->middleware('auth');
+    // return view('dashboard');
+})->middleware(AdminMiddleware::class)->name('dashboard');
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

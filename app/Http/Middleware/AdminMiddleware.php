@@ -22,6 +22,7 @@ class AdminMiddleware
 
         if (!$user) {
             return redirect()->route('login')->with('error', 'You must be an admin to access this page.');
+        } elseif ($user->userType === 'teacher') {
         } elseif ($user->userType === 'student') {
             return redirect()->back()->with('error', 'You cannot edit student details.');
         }

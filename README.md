@@ -1637,29 +1637,139 @@ Laravel 12 offers four main authentication packages: **Bootstrap UI**, **Jetstre
 
 ### Bootstrap UI
 
--   **Simple and easy-to-implement** package with minimal authentication features
--   Comes with **Bootstrap-based UI** components but lacks advanced features like two-factor authentication or team management
--   **Ideal for:** Small applications where you just need login/register functionalities quickly
+**Simple and easy-to-implement** package with minimal authentication features.
+
+Comes with **Bootstrap-based UI** components but lacks advanced features like two-factor authentication or team management.
+
+**Ideal for:** Small applications where you just need login/register functionalities quickly.
+
+**Installation:**
+
+```bash
+composer require laravel/ui
+```
+
+**Uninstallation:**
+
+```bash
+composer remove laravel/ui
+```
+
+**Run command:**
+
+```bash
+npm run dev
+```
+
+---
 
 ### Jetstream
 
--   **Full-featured authentication system** built with Tailwind CSS
--   Supports **two-factor authentication, team management, profile management**, and **API token management**
--   **Recommended for:** More complex apps like SaaS platforms or applications that require real-time features (Livewire)
+**Full-featured authentication system** built with Tailwind CSS.
+
+Supports **two-factor authentication, team management, profile management**, and **API token management**.
+
+**Recommended for:** More complex apps like SaaS platforms or applications that require real-time features (Livewire).
+
+**Installation:**
+
+```bash
+composer require laravel/jetstream
+php artisan jetstream:install
+```
+
+Then choose the Livewire, Pest and optional settings.
+
+**Run command:**
+
+```bash
+npm run dev
+```
+
+---
 
 ### Fortify
 
--   **Backend-focused authentication** package with no UI components
--   Works well for **API-based applications** or SPAs where you want to handle authentication through an API (using Laravel Sanctum)
--   **Highly customizable** but requires you to build your own frontend/UI
+**Backend-focused authentication** package with no UI components.
+
+Works well for **API-based applications** or SPAs where you want to handle authentication through an API (using Laravel Sanctum).
+
+**Highly customizable** but requires you to build your own frontend/UI.
+
+**Installation:**
+
+```bash
+composer require laravel/fortify
+```
+
+**Publish the vendor file:**
+
+```bash
+php artisan vendor:publish
+```
+
+**Install remaining packages:**
+
+```bash
+npm install
+```
+
+**Uninstallation:**
+
+```bash
+composer remove laravel/fortify
+```
+
+**Run command:**
+
+```bash
+npm run dev
+```
+
+---
 
 ### Breeze
 
--   **Simple and minimalistic** authentication solution using Tailwind CSS
--   Provides the **basic authentication features** such as login, registration, and password reset
--   **Ideal for:** Small projects, rapid prototyping, or when you need something simple and straightforward without complex features like teams or two-factor authentication
+**Simple and minimalistic** authentication solution using Tailwind CSS.
 
----
+Provides the **basic authentication features** such as login, registration, and password reset.
+
+**Ideal for:** Small projects, rapid prototyping, or when you need something simple and straightforward without complex features like teams or two-factor authentication.
+
+**Installation:**
+
+```bash
+composer require laravel/breeze --dev
+php artisan breeze:install
+```
+
+Then select Blade, then Yes, then Pest.
+
+**Migrate:**
+
+```bash
+php artisan migrate
+```
+
+**Install remaining packages:**
+
+```bash
+npm install
+```
+
+**Uninstallation:**
+
+```bash
+composer remove laravel/breeze
+```
+
+**Run command:**
+
+```bash
+npm run dev
+```
+
+## **Note:** It will store the access token in cookies.
 
 ## Middleware Authorization
 
