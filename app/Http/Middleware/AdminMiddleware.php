@@ -24,7 +24,7 @@ class AdminMiddleware
         } elseif ($user->userType === 'teacher') {
             return $next($request);
         } elseif ($user->userType === 'student') {
-            return redirect()->back()->with('messages', 'You cannot edit student details.');
+            // return redirect()->back()->with('messages', 'You cannot edit student details.');
         }
         return $next($request);
     }

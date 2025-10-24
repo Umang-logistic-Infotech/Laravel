@@ -23,8 +23,10 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         //
-        Gate::define('edit-student', function (User $user, Student $student) {
-            return $user->id === $student->user_id;
+        // Gate::define('edit-student', function (User $user, Student $student) {
+        // });
+        Gate::define('teacher', function (User $user) {
+            return $user->userType === 'teacher';
         });
     }
 }

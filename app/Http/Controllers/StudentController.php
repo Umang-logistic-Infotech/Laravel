@@ -97,7 +97,7 @@ class StudentController extends Controller
     public function getStudent($id)
     {
         $Student = Student::findOrFail($id);
-        Gate::authorize('edit-student', $Student);
+        Gate::authorize('update', $Student);
 
         $user = Auth::user();
 

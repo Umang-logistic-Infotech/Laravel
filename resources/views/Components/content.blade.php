@@ -2,7 +2,7 @@
 
     <div class="d-flex justify-content-between align-items-center px-3 py-2">
         <div class="d-flex align-items-center gap-3">
-            <form action="{{ URL('/') }}" method="GET" enctype="multipart/form-data"
+            <form action="{{ URL('dashboard/') }}" method="GET" enctype="multipart/form-data"
                 class="d-flex align-items-center gap-2">
                 <input type="search" placeholder="Enter student name" id="search" name="search"
                     value="{{ request('search') }}" class="form-control" />
@@ -59,7 +59,9 @@
                             </p>
                         @endif
                     </td>
-                    @can('edit-student', $student)
+
+                    {{-- @can('teacher') --}}
+                    @can('update', $student)
                         <td id="delete-{{ $student->id }}">
                             <a href="{{ URL('/getStudent/' . $student->id) }}">
                                 <img src="{{ asset('images/edit.svg') }}" class="deleteButton m-0" alt="Edit">
@@ -74,9 +76,9 @@
                                     <img src="{{ asset('images/delete.svg') }}" alt="Delete">
                                 </button>
                             </form>
-
                         </td>
                     @endcan
+                    {{-- @endcan --}}
 
                 </tr>
             @endforeach
