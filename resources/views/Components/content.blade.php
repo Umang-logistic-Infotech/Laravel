@@ -59,22 +59,25 @@
                             </p>
                         @endif
                     </td>
-                    <td id="delete-{{ $student->id }}">
-                        <a href="{{ URL('/getStudent/' . $student->id) }}">
-                            <img src="{{ asset('images/edit.svg') }}" class="deleteButton m-0" alt="Edit">
-                        </a>
-                    </td>
-                    <td id="delete-{{ $student->id }}">
-                        <form action="{{ URL('/deleteStudent/' . $student->id) }}" method="POST"
-                            onsubmit="return confirm('Are you sure you want to delete this student?')">
-                            @csrf
-                            @method('delete')
-                            <button type="submit" class="deleteButton m-0" style="background: none; border: none;">
-                                <img src="{{ asset('images/delete.svg') }}" alt="Delete">
-                            </button>
-                        </form>
+                    @can('edit-student', $student)
+                        <td id="delete-{{ $student->id }}">
+                            <a href="{{ URL('/getStudent/' . $student->id) }}">
+                                <img src="{{ asset('images/edit.svg') }}" class="deleteButton m-0" alt="Edit">
+                            </a>
+                        </td>
+                        <td id="delete-{{ $student->id }}">
+                            <form action="{{ URL('/deleteStudent/' . $student->id) }}" method="POST"
+                                onsubmit="return confirm('Are you sure you want to delete this student?')">
+                                @csrf
+                                @method('delete')
+                                <button type="submit" class="deleteButton m-0" style="background: none; border: none;">
+                                    <img src="{{ asset('images/delete.svg') }}" alt="Delete">
+                                </button>
+                            </form>
 
-                    </td>
+                        </td>
+                    @endcan
+
                 </tr>
             @endforeach
         </tbody>

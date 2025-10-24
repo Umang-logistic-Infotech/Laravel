@@ -6,7 +6,6 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Auth;
-
 use function Laravel\Prompts\alert;
 
 class AdminMiddleware
@@ -21,10 +20,11 @@ class AdminMiddleware
         $user = Auth::user();
 
         if (!$user) {
-            return redirect()->route('login')->with('error', 'You must be an admin to access this page.');
+            return redirect()->route('login')->with('messages', 'You must be an admin to access this page.');
         } elseif ($user->userType === 'teacher') {
+            return $next($request);
         } elseif ($user->userType === 'student') {
-            return redirect()->back()->with('error', 'You cannot edit student details.');
+            return redirect()->back()->with('messages', 'You cannot edit student details.');
         }
         return $next($request);
     }

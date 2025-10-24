@@ -10,6 +10,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 
 use function Laravel\Prompts\alert;
 
@@ -96,6 +97,8 @@ class StudentController extends Controller
     public function getStudent($id)
     {
         $Student = Student::findOrFail($id);
+        Gate::authorize('edit-student', $Student);
+
         $user = Auth::user();
 
         // return "Student " . $item;
