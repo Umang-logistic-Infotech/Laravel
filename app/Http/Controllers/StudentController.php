@@ -50,7 +50,8 @@ class StudentController extends Controller
         $Student->user_id = $request->studentUserId;
         $Student->profileImage = $imagePath;
         $Student->save();
-        return redirect('/');
+        session()->flash('success', 'student created successfully');
+        return redirect('/dashboard');
     }
 
 
@@ -142,7 +143,9 @@ class StudentController extends Controller
         $student->user_id = $request->studentUserId;
         $student->profileImage = $imagePath;
         $student->update();
-        return redirect('/');
+        session()->flash('success', 'student Updated successfully');
+
+        return redirect('/dashboard');
     }
 
     public function deleteStudent($id)
@@ -152,7 +155,9 @@ class StudentController extends Controller
             Storage::disk('public')->delete($student->profileImage);
         }
         $student->delete();
-        return redirect('/');
+        session()->flash('success', 'student deleted successfully');
+
+        return redirect('/dashboard');
     }
 
     public function deletedStudents()

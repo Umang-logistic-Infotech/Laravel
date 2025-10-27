@@ -1,11 +1,14 @@
 <?php
 
+use App\Http\Controllers\CacheController;
+use App\Http\Controllers\EmailsController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StudentController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\InvokableController;
 use App\Http\Controllers\ResourceController;
 use App\Http\Controllers\TeacherController;
+use App\Http\Controllers\SessionController;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Middleware\AdminMiddleware;
 
@@ -64,6 +67,10 @@ Route::controller(TeacherController::class)->group(function () {
 Route::fallback(function () {
     return "please enter valid url";
 });
+
+Route::get('/session', [SessionController::class, 'index']);
+Route::get('/cache', [CacheController::class, 'index']);
+Route::get('/email', [EmailsController::class, 'welcomeEmail']);
 require __DIR__ . '/auth.php';
 // Route::get('/', function () {
 //     return view('welcome');

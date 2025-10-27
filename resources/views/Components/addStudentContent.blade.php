@@ -1,13 +1,6 @@
 <div class="container">
-    @if ($errors->any())
-        <div class="alert alert-denger">
-            <ul>
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
+    <x-ErrorsComponent />
+
     <form method="POST" action="{{ URL('/createStudent') }}" enctype="multipart/form-data">
 
         @csrf

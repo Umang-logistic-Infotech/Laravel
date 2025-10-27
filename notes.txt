@@ -1441,3 +1441,100 @@ Step	Description
 4	Use it in Blade with <x-alertcomponent /> syntax
 5	Use slots for flexible content
 6	Use anonymous components for simple elements
+
+http Sessions :- 
+    It is used to store data across multiple PAGES or requests to keep track of loged user, flase messages or shopping carts.
+    By Default laravel stores session tocken in database tables
+
+    Add an item to session:-
+        session(['color' => 'blue']);
+
+    Print session :-
+        $color = session('color');
+
+    Get all keys inside session :-
+        session()->all()
+
+    Display flash message
+        If we refresh 1 time the flash message will not disappear but after second time it will disappear.
+
+        session()->flash('status', 'You visited new page');
+
+    Remove sessions :-
+        session()->forget('color');
+
+    Empty the session :-
+        session()->flush();
+
+
+Cache in laravel
+    it is used for  faster access of data.
+    Laravel supports multiple caching drivers
+        change in env file set CACHE_STORE=file unstade of database to see realtime changes 
+    
+    Syntax to set cache :-
+        Cache::put('keyName', 'value', Duration in seconds);
+
+    Retrive and return cache value 
+        $value = Cache::get('test');
+        return $value;
+
+    Set the default values to the cache 
+        $value = Cache::get('test','default value');
+
+    Delete cache:-
+        Cache::forget('test');
+    
+    Empty cache :-
+        Cache::flush();
+
+    Add ->toArray() for faster access
+
+
+Sending emails via google account
+    go to google account
+    then search app password
+    then login with password   
+    then create app with app name   // it will generate 12 character pass key
+    copy the password key 
+
+    inside the .env file update the configurations
+
+    MAIL_MAILER=smtp
+    # MAIL_SCHEME=null
+    MAIL_HOST=smtp.gmail.com
+    MAIL_PORT=587
+    MAIL_USERNAME="your email"
+    MAIL_PASSWORD="12 character code"
+    # MAIL_FROM_ADDRESS="hello@example.com"     // no need to specify for now
+    MAIL_FROM_NAME="${APP_NAME}"
+
+    Create mail file :- php artisan make:mail WelcomeMail       // it will create WelcomeMail.php file inside app/http/Mail folder 
+        create welcomemail.blade.php file inside resources/views/emails folder and add the email content in that welcomemail.blade.php File
+
+
+        update the envelope function to set custome email subject inside App/Http/Mail/WelcomeMail.php file
+                public function envelope(): Envelope
+                {
+                    return new Envelope(
+                        subject: 'Welcome Mail',
+                    );
+                }
+        update the content function to send our custome email content 
+            public function content(): Content
+                {
+                    return new Content(
+                        view: 'emails.WelcomeMail',
+                    );
+                }
+    then create a controller for mails :- php artisan make:controller EmailsController
+        use App\Mail\WelcomeMail;
+        use Illuminate\Support\Facades\Mail;
+
+        public function welcomeEmail()
+        {
+            Mail::to('receiver@example.com')->send(new WelcomeMail());          // To send email
+            return "Email sent successfully";
+        }
+
+    Create route for sending mail :- Route::get('/email', [EmailsController::class, 'welcomeEmail']);

@@ -32,6 +32,9 @@
 -   [Middleware Authorization](#middleware-authorization)
 -   [Gates and Policies in Laravel](#gates-and-policies-in-laravel)
 -   [Blade Custom Components](#blade-custom-components)
+-   [HTTP Sessions](#http-sessions)
+-   [Cache in Laravel](#cache-in-laravel)
+-   [Sending Emails via Google Account](#sending-emails-via-google-account)
 
 ---
 
@@ -2142,6 +2145,766 @@ You can group components logically.
 
 ---
 
+# Laravel Sessions, Cache and Email
+
+## HTTP Sessions
+
+It is used to store data across multiple **PAGES** or requests to keep track of logged user, flash messages or shopping carts.
+
+By default, Laravel stores session token in database tables.
+
+### Add an Item to Session
+
+```php
+session(['color' => 'blue']);
+```
+
+**Relatable Example:**
+
+```php
+// Store user's preferred language
+session(['language' => 'en']);
+
+// Store shopping cart
+session(['cart' => ['item1', 'item2', 'item3']]);
+```
+
+### Print/Retrieve Session
+
+```php
+$color = session('color');
+```
+
+**Example:**
+
+```php
+// Get user's preferred language
+$language = session('language', 'en'); // 'en' is default if not set
+echo "Current language: " . $language;
+```
+
+### Get All Keys Inside Session
+
+```php
+$allData = session()->all();
+```
+
+**Example:**
+
+```php
+// View all session data for debugging
+dd(session()->all());
+```
+
+### Check if Session Exists
+
+```php
+if (session()->has('color')) {
+    echo "Color is set!";
+}
+
+// Check if exists and not null
+if (session()->exists('user_id')) {
+    echo "User ID exists";
+}
+```
+
+### Display Flash Message
+
+Flash messages are used for one-time notifications like success, error, or warning messages.
+
+**Important Note:** If we refresh 1 time, the flash message will not disappear but after second time it will disappear.
+
+```php
+session()->flash('status', 'You visited new page');
+```
+
+**Relatable Examples:**
+
+```php
+// Success message after form submission
+session()->flash('success', 'Profile updated successfully!');
+
+// Error message
+session()->flash('error', 'Something went wrong. Please try again.');
+
+// Warning message
+session()->flash('warning', 'Your session will expire in 5 minutes.');
+```
+
+**Display in Blade:**
+
+```blade
+@if(session('success'))
+    <div class="alert alert-success">
+        {{ session('success') }}
+    </div>
+@endif
+
+@if(session('error'))
+    <div class="alert alert-danger">
+        {{ session('error') }}
+    </div>
+@endif
+```
+
+### Flash Data with Now (Immediate Display)
+
+```php
+// Available only for current request
+session()->now('message', 'This appears immediately');
+```
+
+### Reflash (Keep Flash Data for Another Request)
+
+```php
+// Keep all flash data for one more request
+session()->reflash();
+
+// Keep specific flash data
+session()->keep(['success', 'error']);
+```
+
+### Pull (Retrieve and Delete)
+
+```php
+// Get value and remove from session
+$value = session()->pull('color', 'default');
+```
+
+**Example:**
+
+```php
+// Display one-time discount code
+$discount = session()->pull('discount_code');
+if ($discount) {
+    echo "Your discount code: " . $discount;
+}
+```
+
+### Remove Sessions
+
+```php
+session()->forget('color');
+
+// Remove multiple keys
+session()->forget(['color', 'size', 'price']);
+```
+
+### Empty the Session
+
+```php
+session()->flush();
+```
+
+**Important Note:** Use `flush()` carefully as it removes ALL session data including authentication data.
+
+### Regenerate Session ID (Security)
+
+```php
+// Prevent session fixation attacks
+session()->regenerate();
+
+// Regenerate and delete old session
+session()->invalidate();
+```
+
+**Example:**
+
+```php
+// After login
+Auth::login($user);
+session()->regenerate(); // Prevent session hijacking
+```
+
+### Increment/Decrement Session Values
+
+```php
+// Increment
+session()->increment('page_views');
+session()->increment('score', 5); // Increment by 5
+
+// Decrement
+session()->decrement('attempts');
+session()->decrement('credits', 10); // Decrement by 10
+```
+
+**Relatable Example:**
+
+```php
+// Track quiz attempts
+session()->increment('quiz_attempts');
+if (session('quiz_attempts') > 3) {
+    return "Maximum attempts reached!";
+}
+```
+
+---
+
+## Cache in Laravel
+
+It is used for **faster access of data** by storing frequently accessed information in memory or fast storage.
+
+Laravel supports multiple caching drivers: **File**, **Database**, **Redis**, **Memcached**, **DynamoDB**, **Array**.
+
+### Change Cache Driver
+
+Change in `.env` file: Set `CACHE_STORE=file` instead of `database` to see real-time changes.
+
+```env
+CACHE_STORE=file  # Options: file, database, redis, memcached, array
+```
+
+### Syntax to Set Cache
+
+```php
+Cache::put('keyName', 'value', $seconds);
+```
+
+**Examples:**
+
+```php
+// Cache for 1 hour (3600 seconds)
+Cache::put('site_settings', $settings, 3600);
+
+// Cache for 1 day
+Cache::put('popular_posts', $posts, now()->addDay());
+
+// Cache forever (until manually deleted)
+Cache::forever('app_version', '1.0.0');
+```
+
+**Relatable Example:**
+
+```php
+// Cache expensive database query
+$users = Cache::put('active_users', User::where('status', 'active')->get(), 600);
+```
+
+### Retrieve and Return Cache Value
+
+```php
+$value = Cache::get('test');
+return $value;
+```
+
+### Set the Default Values to the Cache
+
+```php
+$value = Cache::get('test', 'default value');
+```
+
+**Example:**
+
+```php
+// Get site name from cache or use default
+$siteName = Cache::get('site_name', 'My Website');
+```
+
+### Cache with Callback (Remember)
+
+```php
+$value = Cache::remember('users', 600, function () {
+    return DB::table('users')->get();
+});
+```
+
+**Relatable Example:**
+
+```php
+// Cache product list for 10 minutes
+$products = Cache::remember('featured_products', 600, function () {
+    return Product::where('featured', true)
+                  ->with('images')
+                  ->get()
+                  ->toArray(); // Convert to array for faster access
+});
+```
+
+### Cache Forever with Callback
+
+```php
+$value = Cache::rememberForever('countries', function () {
+    return Country::all();
+});
+```
+
+### Check if Cache Exists
+
+```php
+if (Cache::has('key')) {
+    echo "Cache exists!";
+}
+```
+
+### Get and Delete (Pull)
+
+```php
+$value = Cache::pull('key');
+```
+
+**Example:**
+
+```php
+// Get one-time verification code
+$code = Cache::pull('verification_code_' . $userId);
+```
+
+### Increment/Decrement Cache Values
+
+```php
+Cache::increment('page_views');
+Cache::increment('visits', 5);
+
+Cache::decrement('stock');
+Cache::decrement('inventory', 10);
+```
+
+**Relatable Example:**
+
+```php
+// Track API rate limiting
+Cache::increment('api_calls_' . $userId);
+$calls = Cache::get('api_calls_' . $userId, 0);
+
+if ($calls > 100) {
+    return "Rate limit exceeded";
+}
+```
+
+### Add (Only if Not Exists)
+
+```php
+// Returns true if added, false if already exists
+$added = Cache::add('key', 'value', 600);
+```
+
+### Delete Cache
+
+```php
+Cache::forget('test');
+```
+
+**Example:**
+
+```php
+// Clear user-specific cache after profile update
+Cache::forget('user_profile_' . $userId);
+```
+
+### Empty Cache
+
+```php
+Cache::flush();
+```
+
+**Important Note:** `flush()` clears ALL cache. Use with caution in production!
+
+### Clear Cache via Artisan Commands
+
+```bash
+# Clear application cache
+php artisan cache:clear
+
+# Clear config cache
+php artisan config:clear
+
+# Clear route cache
+php artisan route:clear
+
+# Clear view cache
+php artisan view:clear
+
+# Clear all caches
+php artisan optimize:clear
+```
+
+### Cache Tags (Redis/Memcached only)
+
+```php
+// Store with tags
+Cache::tags(['users', 'admins'])->put('admin_users', $users, 600);
+
+// Retrieve with tags
+$users = Cache::tags(['users', 'admins'])->get('admin_users');
+
+// Flush specific tag
+Cache::tags(['users'])->flush();
+```
+
+### Performance Tip
+
+Add `->toArray()` for faster access when caching Eloquent collections.
+
+```php
+// Slower (keeps Eloquent overhead)
+Cache::put('users', User::all(), 600);
+
+// Faster (converts to plain array)
+Cache::put('users', User::all()->toArray(), 600);
+```
+
+---
+
+## Sending Emails via Google Account
+
+### Step 1: Generate App Password
+
+1. Go to **Google Account** (https://myaccount.google.com/)
+2. Navigate to **Security**
+3. Enable **2-Step Verification** (required for app passwords)
+4. Search for **App Password**
+5. Login with password
+6. Create app with app name (e.g., "Laravel App")
+7. It will generate a **16-character pass key**
+8. Copy the password key
+
+**Important Note:** App passwords are only available if 2-Step Verification is enabled.
+
+### Step 2: Update .env File
+
+Inside the `.env` file, update the configurations:
+
+```env
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USERNAME="youremail@gmail.com"
+MAIL_PASSWORD="xxxx xxxx xxxx xxxx"  # 16-character app password
+MAIL_ENCRYPTION=tls
+MAIL_FROM_ADDRESS="youremail@gmail.com"
+MAIL_FROM_NAME="${APP_NAME}"
+```
+
+**Important Notes:**
+
+-   Use the 16-character app password, NOT your regular Gmail password
+-   Remove spaces from the app password when pasting in .env file
+-   Make sure to clear config cache after updating: `php artisan config:clear`
+
+### Step 3: Create Mail File
+
+**Command:**
+
+```bash
+php artisan make:mail WelcomeMail
+```
+
+It will create `WelcomeMail.php` file inside `app/Mail` folder.
+
+### Step 4: Create Email View
+
+Create `welcomemail.blade.php` file inside `resources/views/emails` folder.
+
+**Example email template:**
+
+```blade
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Welcome to {{ config('app.name') }}</title>
+</head>
+<body>
+    <h1>Welcome, {{ $user->name }}!</h1>
+    <p>Thank you for joining our platform.</p>
+    <p>Your account has been successfully created.</p>
+
+    <a href="{{ url('/dashboard') }}" style="background: #4CAF50; color: white; padding: 10px 20px; text-decoration: none;">
+        Go to Dashboard
+    </a>
+
+    <p>Best regards,<br>{{ config('app.name') }} Team</p>
+</body>
+</html>
+```
+
+### Step 5: Update Mail Class
+
+Update the `envelope` function to set custom email subject inside `App/Mail/WelcomeMail.php` file:
+
+```php
+<?php
+
+namespace App\Mail;
+
+use Illuminate\Bus\Queueable;
+use Illuminate\Mail\Mailable;
+use Illuminate\Mail\Mailables\Content;
+use Illuminate\Mail\Mailables\Envelope;
+use Illuminate\Queue\SerializesModels;
+
+class WelcomeMail extends Mailable
+{
+    use Queueable, SerializesModels;
+
+    public $user;
+
+    /**
+     * Create a new message instance.
+     */
+    public function __construct($user)
+    {
+        $this->user = $user;
+    }
+
+    /**
+     * Get the message envelope.
+     */
+    public function envelope(): Envelope
+    {
+        return new Envelope(
+            subject: 'Welcome to ' . config('app.name'),
+            // Optional: Set reply-to
+            // replyTo: 'support@example.com',
+        );
+    }
+
+    /**
+     * Get the message content definition.
+     */
+    public function content(): Content
+    {
+        return new Content(
+            view: 'emails.welcomemail',
+        );
+    }
+
+    /**
+     * Get the attachments for the message.
+     */
+    public function attachments(): array
+    {
+        return [
+            // Attach files if needed
+            // Attachment::fromPath('/path/to/file.pdf'),
+        ];
+    }
+}
+```
+
+### Step 6: Create Controller for Mails
+
+**Command:**
+
+```bash
+php artisan make:controller EmailsController
+```
+
+**Inside the controller:**
+
+```php
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Mail\WelcomeMail;
+use Illuminate\Support\Facades\Mail;
+use App\Models\User;
+
+class EmailsController extends Controller
+{
+    public function welcomeEmail()
+    {
+        $user = User::find(1); // Get user
+
+        Mail::to($user->email)->send(new WelcomeMail($user));
+
+        return "Email sent successfully to " . $user->email;
+    }
+
+    // Send to multiple recipients
+    public function sendBulkEmail()
+    {
+        $users = User::all();
+
+        foreach ($users as $user) {
+            Mail::to($user->email)->send(new WelcomeMail($user));
+        }
+
+        return "Emails sent to " . $users->count() . " users";
+    }
+
+    // Send with CC and BCC
+    public function sendWithCopies()
+    {
+        $user = User::find(1);
+
+        Mail::to($user->email)
+            ->cc('manager@example.com')
+            ->bcc('admin@example.com')
+            ->send(new WelcomeMail($user));
+
+        return "Email sent with copies";
+    }
+
+    // Queue email for better performance
+    public function queueEmail()
+    {
+        $user = User::find(1);
+
+        Mail::to($user->email)->queue(new WelcomeMail($user));
+
+        return "Email queued successfully";
+    }
+
+    // Delay email sending
+    public function delayEmail()
+    {
+        $user = User::find(1);
+
+        Mail::to($user->email)
+            ->later(now()->addMinutes(5), new WelcomeMail($user));
+
+        return "Email will be sent in 5 minutes";
+    }
+}
+```
+
+### Step 7: Create Route for Sending Mail
+
+```php
+Route::get('/email', [EmailsController::class, 'welcomeEmail']);
+Route::get('/bulk-email', [EmailsController::class, 'sendBulkEmail']);
+Route::get('/email-copies', [EmailsController::class, 'sendWithCopies']);
+Route::get('/queue-email', [EmailsController::class, 'queueEmail']);
+```
+
+### Additional Email Features
+
+#### Send Email with Attachments
+
+```php
+public function content(): Content
+{
+    return new Content(
+        view: 'emails.welcomemail',
+    );
+}
+
+public function attachments(): array
+{
+    return [
+        Attachment::fromPath(public_path('files/welcome.pdf'))
+                  ->as('Welcome Guide.pdf')
+                  ->withMime('application/pdf'),
+    ];
+}
+```
+
+#### Send Email with Inline Images
+
+```php
+// In your blade file
+<img src="{{ $message->embed(public_path('images/logo.png')) }}" alt="Logo">
+```
+
+#### Markdown Emails (Alternative)
+
+```bash
+php artisan make:mail WelcomeMail --markdown=emails.welcome
+```
+
+**Markdown template example:**
+
+```blade
+@component('mail::message')
+# Welcome to {{ config('app.name') }}
+
+Thank you for joining our platform!
+
+@component('mail::button', ['url' => url('/dashboard')])
+Go to Dashboard
+@endcomponent
+
+Thanks,<br>
+{{ config('app.name') }}
+@endcomponent
+```
+
+### Testing Emails Locally
+
+Use **Mailtrap** or **MailHog** for testing without sending real emails:
+
+```env
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.mailtrap.io
+MAIL_PORT=2525
+MAIL_USERNAME=your_mailtrap_username
+MAIL_PASSWORD=your_mailtrap_password
+MAIL_ENCRYPTION=tls
+```
+
+### Important Notes for Email Sending
+
+1. **Clear Config Cache:** After changing `.env`, always run:
+
+```bash
+   php artisan config:clear
+```
+
+2. **Queue Emails:** For better performance, use queues:
+
+```php
+   Mail::to($user->email)->queue(new WelcomeMail($user));
+```
+
+3. **Handle Failures:** Use try-catch for error handling:
+
+```php
+   try {
+       Mail::to($user->email)->send(new WelcomeMail($user));
+   } catch (\Exception $e) {
+       Log::error('Email failed: ' . $e->getMessage());
+   }
+```
+
+4. **Rate Limiting:** Gmail has sending limits (500 emails/day for free accounts)
+
+5. **SPF and DKIM:** For production, configure proper email authentication
+
+---
+
+## Summary
+
+| Feature         | Session                                    | Cache                                               | Email                                 |
+| --------------- | ------------------------------------------ | --------------------------------------------------- | ------------------------------------- |
+| **Purpose**     | Store user-specific data across requests   | Store frequently accessed data for faster retrieval | Send notifications and communications |
+| **Persistence** | Per user session                           | Application-wide                                    | One-time delivery                     |
+| **Use Case**    | Login state, flash messages, shopping cart | Database query results, API responses               | Welcome emails, notifications, alerts |
+| **Storage**     | Database, File, Cookie                     | File, Database, Redis, Memcached                    | SMTP servers (Gmail, Mailgun, etc.)   |
+| **Expiration**  | Session timeout                            | Custom TTL (Time To Live)                           | Immediate or queued                   |
+| **Performance** | Fast (stored per user)                     | Very fast (cached in memory)                        | Depends on queue configuration        |
+
+---
+
+## Best Practices
+
+### Sessions
+
+✅ Use flash messages for one-time notifications  
+✅ Regenerate session ID after login  
+✅ Never store sensitive data in sessions  
+✅ Use `session()->pull()` for one-time data  
+✅ Clear old sessions regularly
+
+### Cache
+
+✅ Cache expensive database queries  
+✅ Use appropriate TTL (Time To Live)  
+✅ Convert Eloquent to arrays for better performance  
+✅ Use cache tags for organized cache management  
+✅ Clear cache after data updates  
+✅ Use Redis or Memcached in production
+
+### Email
+
+✅ Queue emails for better performance  
+✅ Use Markdown for clean email templates  
+✅ Test emails with Mailtrap before production  
+✅ Handle email failures gracefully  
+✅ Use app passwords, not regular passwords  
+✅ Respect email sending limits
+
 ## Additional Resources
 
 -   [Laravel Documentation](https://laravel.com/docs)
@@ -2161,6 +2924,10 @@ You can group components logically.
 -   [Laravel Gates Documentation](https://laravel.com/docs/authorization#gates)
 -   [Laravel Policies Documentation](https://laravel.com/docs/authorization#creating-policies)
 -   [Laravel Blade Components Documentation](https://laravel.com/docs/blade#components)
+-   [Laravel Session Documentation](https://laravel.com/docs/session)
+-   [Laravel Cache Documentation](https://laravel.com/docs/cache)
+-   [Laravel Mail Documentation](https://laravel.com/docs/mail)
+-   [Laravel Queue Documentation](https://laravel.com/docs/queues)
 
 ---
 
