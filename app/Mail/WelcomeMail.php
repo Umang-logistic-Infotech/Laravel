@@ -4,13 +4,15 @@ namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Mail\Mailable;
+use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Mail\Mailable;
 
 class WelcomeMail extends Mailable
 {
+
     use Queueable, SerializesModels;
 
     /**
@@ -27,7 +29,7 @@ class WelcomeMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Welcome Mail',
+            subject: 'Welcome to ' . config('app.name'),
         );
     }
 
@@ -48,6 +50,10 @@ class WelcomeMail extends Mailable
      */
     public function attachments(): array
     {
-        return [];
+        return [
+            Attachment::fromPath(storage_path('app/public/docs.pdf'))
+                ->as('Tranning Docs')
+                ->withMime('application/pdf'),
+        ];
     }
 }
