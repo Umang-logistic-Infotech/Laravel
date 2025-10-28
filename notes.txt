@@ -1538,3 +1538,12 @@ Sending emails via google account
         }
 
     Create route for sending mail :- Route::get('/email', [EmailsController::class, 'welcomeEmail']);
+
+Send mail with verification link
+    for that we need to implement MustVerifyEmail Interface and authenticate routes 
+
+        Auth::routes(['verify' => true]);
+
+        add verified attrivute with middleware ->middleware(AdminMiddleware::class, 'verified')
+
+        Ex:-class User extends Authenticatable implements MustVerifyEmail

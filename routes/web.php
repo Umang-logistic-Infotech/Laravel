@@ -25,7 +25,7 @@ Route::get('/dashboard', function () {
 
     return view('homeOld', compact('students', 'user'));
     // return view('dashboard');
-})->middleware(AdminMiddleware::class)->name('dashboard');
+})->middleware(AdminMiddleware::class, 'verified')->name('dashboard');
 
 
 Route::middleware('auth')->group(function () {
@@ -43,9 +43,9 @@ Route::view('/aboutUs', 'aboutUs')->middleware('auth');
 Route::view('/contactUs', 'contactUs')->middleware('auth');
 // Route::view('/editStudent', 'updateStudent');
 
-Route::controller(StudentController::class)->group(function () {
+Route::controller(StudentController::class)->middleware('auth', 'verified')->group(function () {
 
-    Route::get('aboutstudent/{id}/{name}', 'aboutStudent')->middleware('auth');
+    Route::get('aboutstudent/{id}/{name}', 'aboutStudent');
     Route::get('getStudents',  'getStudents')->middleware('auth');
     Route::get('getStudentsCount',  'getStudentsCount')->middleware('auth');
     Route::get('addStudent', 'addStudent')->middleware('auth');
@@ -67,7 +67,7 @@ Route::controller(TeacherController::class)->group(function () {
 Route::fallback(function () {
     return "please enter valid url";
 });
-
+Auth::routes(['verify' => true]);
 Route::get('/session', [SessionController::class, 'index']);
 Route::get('/cache', [CacheController::class, 'index']);
 Route::get('/email', [EmailsController::class, 'welcomeEmail']);
